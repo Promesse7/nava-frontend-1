@@ -9,21 +9,21 @@ const BusCompaniesDisplay = () => {
   const busCompanies = [
     {
       id: 1,
-      name: "Express Lines",
+      name: "RITCO LTD",
       rating: 4.8,
       trips: 200,
       yearsActive: 15,
-      logo: "/api/placeholder/100/100",
+      logo: "https://www.google.com/imgres?q=ritco&imgurl=https%3A%2F%2Fwww.ritco.rw%2Fassets%2Fimages%2Fhome_two%2Fhero_thumb_2.png&imgrefurl=https%3A%2F%2Fwww.ritco.rw%2F&docid=m8xaAldcITi2qM&tbnid=fS4O5bCBCyDJaM&vet=12ahUKEwjl2YLMpfqKAxWKX0EAHabDD-8QM3oECGsQAA..i&w=1600&h=1067&hcb=2&ved=2ahUKEwjl2YLMpfqKAxWKX0EAHabDD-8QM3oECGsQAA",
       fleetSize: 45,
       routes: [
         {
           id: 'r1',
-          from: 'New York',
-          to: 'Boston',
+          from: 'Muhanga',
+          to: 'Kigali',
           duration: '4h 15m',
-          stops: ['Hartford', 'Worcester'],
+          stops: ['Kamonyi', 'Ruyenzi'],
           departureTime: ['06:00', '09:00', '12:00', '15:00'],
-          price: '$45',
+          price: '45,000',
           coordinates: [
             { lat: 40.7128, lng: -74.0060 }, // NY
             { lat: 42.3601, lng: -71.0589 }  // Boston
@@ -31,12 +31,12 @@ const BusCompaniesDisplay = () => {
         },
         {
           id: 'r2',
-          from: 'Boston',
-          to: 'Washington DC',
+          from: 'Huye',
+          to: 'Musanze',
           duration: '8h 30m',
-          stops: ['New York', 'Philadelphia', 'Baltimore'],
+          stops: ['Ruhango', 'Muhanga', 'Kigali'],
           departureTime: ['07:00', '10:00', '13:00'],
-          price: '$75',
+          price: '75,000',
           coordinates: [
             { lat: 42.3601, lng: -71.0589 }, // Boston
             { lat: 38.9072, lng: -77.0369 }  // DC
@@ -46,21 +46,21 @@ const BusCompaniesDisplay = () => {
     },
     {
       id: 2,
-      name: "Comfort Coach",
+      name: "HORIZON Express",
       rating: 4.6,
       trips: 150,
       yearsActive: 10,
-      logo: "/api/placeholder/100/100",
+      logo: "https://www.google.com/imgres?q=horizon%20express%20rwanda&imgurl=https%3A%2F%2Flookaside.fbsbx.com%2Flookaside%2Fcrawler%2Fmedia%2F%3Fmedia_id%3D100063774872921&imgrefurl=https%3A%2F%2Fwww.facebook.com%2Fhorizonexpressltd%2F&docid=Bf5hR-fWHVWfOM&tbnid=hJBktaugUA4aiM&vet=12ahUKEwjFusqPpvqKAxWMVUEAHa4mFiUQM3oECGsQAA..i&w=502&h=504&hcb=2&ved=2ahUKEwjFusqPpvqKAxWMVUEAHa4mFiUQM3oECGsQAA",
       fleetSize: 35,
       routes: [
         {
           id: 'r3',
-          from: 'Chicago',
-          to: 'Detroit',
+          from: 'Muhanga',
+          to: 'Rubavu',
           duration: '4h 45m',
-          stops: ['Gary', 'Kalamazoo'],
+          stops: ['Ngororero', 'Musanze'],
           departureTime: ['08:00', '11:00', '14:00'],
-          price: '$55',
+          price: '55,000',
           coordinates: [
             { lat: 41.8781, lng: -87.6298 }, // Chicago
             { lat: 42.3314, lng: -83.0458 }  // Detroit
