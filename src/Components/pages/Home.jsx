@@ -17,8 +17,8 @@ const HomePage = () => {
 
   const popularRoutes = [
     { 
-      from: 'New York', 
-      to: 'Boston', 
+      from: 'Muhanga', 
+      to: 'Kigali', 
       price: 45, 
       duration: '4h 15m',
       busType: 'Luxury',
@@ -26,7 +26,7 @@ const HomePage = () => {
       departureTime: '08:00 AM',
       arrivalTime: '12:15 PM',
       availableSeats: 23,
-      company: 'Express Lines',
+      company: 'RITCO LTD',
       rating: 4.8
     },
     // Add more routes as needed
@@ -211,7 +211,7 @@ const HomePage = () => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
-              <span className="text-2xl font-bold">BusGo</span>
+              <span className="text-2xl font-bold">Travel Rwanda</span>
               <div className="hidden md:flex space-x-6">
                 <a href="#" className="text-gray-700 hover:text-black">My Bookings</a>
                 <a href="#" className="text-gray-700 hover:text-black">Support</a>
