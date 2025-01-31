@@ -22,7 +22,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-blue-600 text-white py-16">
+      <div className="bg-black-600 text-white py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-6">Book Your Bus Journey</h1>
           <p className="text-xl mb-8">Safe, comfortable, and affordable bus tickets</p>
@@ -31,7 +31,7 @@ const HomePage = () => {
           <Card className="bg-white text-gray-800 p-6 rounded-lg shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-center space-x-2">
-                <MapPin className="text-blue-600" />
+                <MapPin className="text-black-600" />
                 <input
                   type="text"
                   placeholder="From"
@@ -41,7 +41,7 @@ const HomePage = () => {
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <MapPin className="text-blue-600" />
+                <MapPin className="text-black-600" />
                 <input
                   type="text"
                   placeholder="To"
@@ -51,7 +51,7 @@ const HomePage = () => {
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <Calendar className="text-blue-600" />
+                <Calendar className="text-black-600" />
                 <input
                   type="date"
                   className="w-full p-2 border rounded"
@@ -59,7 +59,7 @@ const HomePage = () => {
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
-              <button className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors">
+              <button className="bg-black-600 text-white p-2 rounded hover:bg-black-700 transition-colors">
                 Search Buses
               </button>
             </div>
@@ -119,7 +119,7 @@ const HomePage = () => {
                       <p className="font-semibold">{route.from} → {route.to}</p>
                       <p className="text-gray-600">Starting from {route.price}</p>
                     </div>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <button className="bg-black-600 text-white px-4 py-2 rounded hover:bg-black-700">
                       Book
                     </button>
                   </div>
