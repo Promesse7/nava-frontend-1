@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, Users, Clock, Bus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 
 const HomePage = () => {
   const [fromLocation, setFromLocation] = useState('');
