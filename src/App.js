@@ -1,9 +1,11 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Components/pages/Home";
-import AdminDashboard from "./Components/admin/AdminDashboard"; // Admin component
-import AdminLogin from "./Components/admin/AdminLogin"; // Admin login page
-import NotFound from "./Components/pages/NotFound"; // 404 page (optional)
+import Ticket from "./Components/features/TicketView";
+import PaymentForm from "./Components/features/PaymentForm";
+import AdminDashboard from "./Components/admin/Dashboard"; // Admin component
+// import AdminLogin from "./Components/admin/AdminLogin"; 
+// import NotFound from "./Components/pages/NotFound"; 
 
 function App() {
   return (
@@ -14,11 +16,12 @@ function App() {
           <Route path="/" element={<Home />} />
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLogin />} />
+         
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
+          <Route path="/ticket" element={<Ticket />} />
+          <Route path="/payment" element={<PaymentForm />} />
           {/* Catch-all for undefined routes */}
-          <Route path="*" element={<NotFound />} />
+         
         </Routes>
       </div>
     </Router>

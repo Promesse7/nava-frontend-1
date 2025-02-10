@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Bell, Clock, Download, Printer } from 'lucide-react';
-import { Button } from '../common';
+import  Button  from '../ui/Button';
 // TicketView Component
 const TicketView = ({ ticket }) => {
     return (
