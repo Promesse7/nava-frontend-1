@@ -22,7 +22,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-black-600 text-white py-16">
+      <div className="bg-black text-white py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-6">Book Your Bus Journey</h1>
           <p className="text-xl mb-8">Safe, comfortable, and affordable bus tickets</p>
@@ -31,7 +31,7 @@ const HomePage = () => {
           <Card className="bg-white text-gray-800 p-6 rounded-lg shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-center space-x-2">
-                <MapPin className="text-black-600" />
+                <MapPin className="text-black" />
                 <input
                   type="text"
                   placeholder="From"

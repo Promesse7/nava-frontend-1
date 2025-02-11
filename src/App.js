@@ -1,27 +1,35 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./Components/pages/Home";
 import Ticket from "./Components/features/TicketView";
 import PaymentForm from "./Components/features/PaymentForm";
-import AdminDashboard from "./Components/admin/Dashboard"; // Admin component
-// import AdminLogin from "./Components/admin/AdminLogin"; 
-// import NotFound from "./Components/pages/NotFound"; 
+import AdminDashboard from "./Components/admin/Dashboard"; 
+import Login from "./Components/auth/LoginForm";
+import Register from "./Components/auth/RegisterForm";
+
+// Protected Route Component
+const ProtectedRoute = ({ element }) => {
+  const isAuthenticated = localStorage.getItem("auth"); // Replace with real auth logic
+  return isAuthenticated ? element : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public/User Routes */}
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-          {/* Admin Routes */}
-         
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/ticket" element={<Ticket />} />
-          <Route path="/payment" element={<PaymentForm />} />
+          {/* Protected Routes */}
+          <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} />} />
+          <Route path="/ticket" element={<ProtectedRoute element={<Ticket />} />} />
+          <Route path="/payment" element={<ProtectedRoute element={<PaymentForm />} />} />
+
           {/* Catch-all for undefined routes */}
-         
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </Router>
