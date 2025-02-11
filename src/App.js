@@ -1,11 +1,12 @@
 import React from "react";
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./Components/pages/Home";
 import Ticket from "./Components/features/TicketView";
 import PaymentForm from "./Components/features/PaymentForm";
 import AdminDashboard from "./Components/admin/Dashboard"; 
-import Login from "./Components/auth/LoginForm";
-import Register from "./Components/auth/RegisterForm";
+import AuthForm from "./Components/auth/Authentication";
+
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -20,8 +21,8 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/sign" element={<AuthForm />} />
+          
 
           {/* Protected Routes */}
           <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} />} />

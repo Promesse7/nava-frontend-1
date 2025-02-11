@@ -5,6 +5,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "cra-template": "1.2.0",
+    "firebase": "^11.3.0",
     "lucide": "^0.475.0",
     "lucide-react": "^0.471.2",
     "react": "^19.0.0",
