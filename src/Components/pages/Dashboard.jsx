@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   User, Ticket, Clock, Settings, LogOut, Bell, Search,
   CreditCard, Calendar, Map, ChevronRight, Filter, Users,
   BarChart, AlertTriangle, CheckCircle, TrendingUp, Bus,
   Download, Printer
 } from 'lucide-react';
+// initializing Firebase
+import { useEffect, useState } from "react";
+import { auth } from "../../firebase"; // Ensure this is correctly imported
+import { getIdTokenResult, onAuthStateChanged } from "firebase/auth";
+
 
 // Common Dashboard Layout Component
 const DashboardLayout = ({ children, userType }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [userRoles, setUserRoles] = useState([]);
+
+  useEffect(() => {
+    const fetchUserRoles = async (user) => {
+      if (user) {
+        try {
+          const tokenResult = await getIdTokenResult(user);
+          setUserRoles(tokenResult.claims.role || []);
+        } catch (error) {
+          console.error("Error fetching user roles:", error);
+        }
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      fetchUserRoles(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   const userMenu = [
     { icon: <User size={20} />, label: 'My Profile' },
@@ -127,7 +153,7 @@ const UserDashboard = () => {
   ];
 
   return (
-    <DashboardLayout userType="user">
+    <DashboardLayout userType= "common user">
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <button className="bg-blue-500 text-white p-6 rounded-xl hover:bg-blue-600 transition-colors">

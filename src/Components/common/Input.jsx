@@ -1,3 +1,6 @@
+import React from 'react';
+ 
+
 // Input Component
 const Input = ({ 
     label, 

@@ -1,38 +1,34 @@
-import React from "react";
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Home from "./Components/pages/Home";
-import Ticket from "./Components/features/TicketView";
-import PaymentForm from "./Components/features/PaymentForm";
-import AdminDashboard from "./Components/admin/Dashboard"; 
-import AuthForm from "./Components/auth/Authentication";
-
-
-// Protected Route Component
-const ProtectedRoute = ({ element }) => {
-  const isAuthenticated = localStorage.getItem("auth"); // Replace with real auth logic
-  return isAuthenticated ? element : <Navigate to="/login" replace />;
-};
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './Components/features/ProtectedRoute';
+import { UserDashboard, AdminDashboard } from './Components/pages/Dashboard';
+import AuthForm from './Components/auth/Authentication';
+import { AuthProvider } from './Components/auth/AuthContext';
 
 function App() {
   return (
     <Router>
-      <div className="App">
+      <AuthProvider>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/sign" element={<AuthForm />} />
-          
-
-          {/* Protected Routes */}
-          <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} />} />
-          <Route path="/ticket" element={<ProtectedRoute element={<Ticket />} />} />
-          <Route path="/payment" element={<ProtectedRoute element={<PaymentForm />} />} />
-
-          {/* Catch-all for undefined routes */}
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<AuthForm />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute requiredRole="common user">
+                <UserDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
-      </div>
+      </AuthProvider>
     </Router>
   );
 }
