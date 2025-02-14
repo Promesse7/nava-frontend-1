@@ -18,9 +18,15 @@ const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    phone:"",
+    address: "",
+    notifications: {
+      emailUpdates: true,
+      smsUpdates: true
+    },
+    membershipType: "",
+    ticketHistory: "",
+    updatedAt: null
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();

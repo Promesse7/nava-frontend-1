@@ -1,20 +1,27 @@
 import React from 'react';
+import { useEffect, useState } from "react";
 import {
   User, Ticket, Clock, Settings, LogOut, Bell, Search,
   CreditCard, Calendar, Map, ChevronRight, Filter, Users,
   BarChart, AlertTriangle, CheckCircle, TrendingUp, Bus,
   Download, Printer
 } from 'lucide-react';
+import {Link, useNavigate} from 'react-router-dom';
+
+
 // initializing Firebase
-import { useEffect, useState } from "react";
-import { auth } from "../../firebase"; // Ensure this is correctly imported
-import { getIdTokenResult, onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../firebase"; // Ensure this is correctly imported
+import { doc, getDoc } from "firebase/firestore";
+import { getIdTokenResult, onAuthStateChanged, signOut } from "firebase/auth";
 
 
 // Common Dashboard Layout Component
 const DashboardLayout = ({ children, userType }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userRoles, setUserRoles] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserRoles = async (user) => {
@@ -35,13 +42,45 @@ const DashboardLayout = ({ children, userType }) => {
     return () => unsubscribe();
   }, []);
 
+  // Fetch user data from Firebase Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!userId) return;
+      try {
+        const userRef = doc(db, "users", userId); // Assuming users are stored in "users" collection
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          setUserData(userSnap.data()); // Store user data in state
+        } else {
+          console.log("No user data found");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      console.log("User logged out successfully");
+      navigate("/login"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Logout Error:", error.message);
+    }
+  };
+
 
   const userMenu = [
-    { icon: <User size={20} />, label: 'My Profile' },
+    { icon: <User size={20} />, label: 'My Profile', path:'/profile' },
     { icon: <Ticket size={20} />, label: 'My Bookings' },
     { icon: <Clock size={20} />, label: 'Travel History' },
     { icon: <CreditCard size={20} />, label: 'Payment Methods' },
-    { icon: <Settings size={20} />, label: 'Settings' }
+    { icon: <Settings size={20} />, label: 'Settings' },
+    {icon: <LogOut size={20} />, label:'Log Out', onClick: handleLogout }
+
   ];
 
   const adminMenu = [
@@ -50,7 +89,8 @@ const DashboardLayout = ({ children, userType }) => {
     { icon: <Users size={20} />, label: 'Customers' },
     { icon: <Ticket size={20} />, label: 'Bookings' },
     { icon: <TrendingUp size={20} />, label: 'Analytics' },
-    { icon: <Settings size={20} />, label: 'Settings' }
+    { icon: <Settings size={20} />, label: 'Settings' },
+    {icon: <LogOut size={20} />, label:'Log Out', onClick: handleLogout }
   ];
 
   const menuItems = userType === 'admin' ? adminMenu : userMenu;
@@ -66,14 +106,22 @@ const DashboardLayout = ({ children, userType }) => {
         </div>
         <nav className="mt-8">
           {menuItems.map((item, index) => (
-            <a
+            <div
               key={index}
-              href="#"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white"
+              className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer"
             >
               {item.icon}
-              <span className={!isSidebarOpen ? 'hidden' : ''}>{item.label}</span>
-            </a>
+              {/* Use Link if there is a path, otherwise call onClick */}
+              {item.path ? (
+                <Link to={item.path} className={!isSidebarOpen ? "hidden" : ""}>
+                  {item.label}
+                </Link>
+              ) : (
+                <button onClick={item.onClick} className={!isSidebarOpen ? "hidden" : ""}>
+                  {item.label}
+                </button>
+              )}
+            </div>
           ))}
         </nav>
       </div>
@@ -107,11 +155,11 @@ const DashboardLayout = ({ children, userType }) => {
               </button>
               <div className="flex items-center space-x-3">
                 <img
-                  src="/api/placeholder/32/32"
+                  // src={userData.avatar}
                   alt="User"
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="font-medium">John Doe</span>
+                <span className="font-medium">{userData.name}</span>
               </div>
             </div>
           </div>
