@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Lock, User, UserPlus, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { SunspotLoader } from "react-awesome-loaders";
 
 
 
@@ -14,6 +15,13 @@ const AuthForm = () => {
   // Initialize Firestore
  const db = getFirestore();
  const adminUsers = ["admin@example.com", "anotheradmin@example.com"];
+ const [loading, setLoading] = useState(true);
+ useEffect(() => {
+  // Simulate data fetching
+  setTimeout(() => {
+    setLoading(false);
+  }, 3000);
+}, []);
 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -114,7 +122,16 @@ const AuthForm = () => {
   };
 
   return (
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+        {loading ? (
+        <SunspotLoader
+          gradientColors={["#FF5733", "#FFBD33"]}
+          desktopSize="100px"
+          mobileSize="80px"
+        />
+      ) : (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white p-8 rounded-xl shadow-2xl transform transition-all duration-500">
           <div className="flex justify-center mb-8">
@@ -214,7 +231,10 @@ const AuthForm = () => {
           </div>
         </div>
       </div>
+        
     </div>
+  )}
+   </div>
   );
 };
 

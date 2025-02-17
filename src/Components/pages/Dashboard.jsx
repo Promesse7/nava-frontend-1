@@ -6,6 +6,7 @@ import {
   BarChart, AlertTriangle, CheckCircle, TrendingUp, Bus,
   Download, Printer
 } from 'lucide-react';
+import { SunspotLoader } from "react-awesome-loaders";
 import {Link, useNavigate} from 'react-router-dom';
 
 
@@ -17,6 +18,13 @@ import { getIdTokenResult, onAuthStateChanged, signOut } from "firebase/auth";
 
 // Common Dashboard Layout Component
 const DashboardLayout = ({ children, userType }) => {
+   const [loading, setLoading] = useState(true);
+   useEffect(() => {
+    // Simulate data fetching
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+  }, []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userRoles, setUserRoles] = useState([]);
   const [userData, setUserData] = useState(null);
@@ -96,6 +104,14 @@ const DashboardLayout = ({ children, userType }) => {
   const menuItems = userType === 'admin' ? adminMenu : userMenu;
 
   return (
+     <div className="flex justify-center items-center h-screen bg-gray-100">
+            {loading ? (
+            <SunspotLoader
+              gradientColors={["#FF5733", "#FFBD33"]}
+              desktopSize="100px"
+              mobileSize="80px"
+            />
+          ) : (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-black text-white transition-all duration-300`}>
@@ -171,6 +187,9 @@ const DashboardLayout = ({ children, userType }) => {
         </main>
       </div>
     </div>
+
+)}
+   </div>
   );
 };
 
