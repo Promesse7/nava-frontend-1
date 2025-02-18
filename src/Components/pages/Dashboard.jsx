@@ -104,7 +104,7 @@ const DashboardLayout = ({ children, userType }) => {
   const menuItems = userType === 'admin' ? adminMenu : userMenu;
 
   return (
-     <div className="flex justify-center items-center h-screen bg-gray-100">
+     <div className=" ">
             {loading ? (
             <Loader />
           ) : (
