@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { SunspotLoader } from "react-awesome-loaders";
+import Loader from '../common/LoadingSpinner'
 
 
 
@@ -124,11 +124,7 @@ const AuthForm = () => {
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
         {loading ? (
-        <SunspotLoader
-          gradientColors={["#FF5733", "#FFBD33"]}
-          desktopSize="100px"
-          mobileSize="80px"
-        />
+        <Loader />
       ) : (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         

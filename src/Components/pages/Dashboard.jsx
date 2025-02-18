@@ -6,7 +6,7 @@ import {
   BarChart, AlertTriangle, CheckCircle, TrendingUp, Bus,
   Download, Printer
 } from 'lucide-react';
-import { SunspotLoader } from "react-awesome-loaders";
+import Loader from '../common/LoadingSpinner'
 import {Link, useNavigate} from 'react-router-dom';
 
 
@@ -106,11 +106,7 @@ const DashboardLayout = ({ children, userType }) => {
   return (
      <div className="flex justify-center items-center h-screen bg-gray-100">
             {loading ? (
-            <SunspotLoader
-              gradientColors={["#FF5733", "#FFBD33"]}
-              desktopSize="100px"
-              mobileSize="80px"
-            />
+            <Loader />
           ) : (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}

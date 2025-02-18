@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Filter} from 'lucide-react';
-import { Button, Select } from '../ui';
+import Button from '../common/Button';
+import Select from '../common/Select';
 
 // FilterSection Component
 const FilterSection = ({ onFilter }) => {

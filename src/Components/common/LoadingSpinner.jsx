@@ -1,4 +1,6 @@
 // LoadingSpinner Component
+import React from "react";
+import { Loader2 } from "lucide-react";
 const LoadingSpinner = ({ size = 'medium' }) => {
     const sizes = {
       small: "w-4 h-4",

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Input from '../ui/Input';
+// import Input from '../common/Input';
 
 // 3. PaymentForm Component - Essential for completing bookings
 const PaymentForm = ({ amount, onPaymentComplete }) => {
