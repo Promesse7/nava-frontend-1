@@ -1,7 +1,7 @@
 import React from 'react';
 import { Car } from 'lucide-react';
 
-const FuturisticLoader = () => {
+const LoadingSpinner = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-full p-8 bg-gray-900 rounded overflow-hidden">
       {/* Background glow effects */}
@@ -36,7 +36,7 @@ const FuturisticLoader = () => {
       {/* Loading text */}
       <div className="mt-8 text-center space-y-2">
         <h3 className="text-xl font-semibold text-white animate-glow-text">
-          Booking Your Ticket...
+          Travel With Your Ticket...
         </h3>
         <div className="flex justify-center space-x-2">
           <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-0" />
