@@ -171,7 +171,7 @@ const DashboardLayout = ({ children, userType }) => {
                   alt="User"
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="font-medium">{userData.name}</span>
+                <span className="font-medium">Mine</span>
               </div>
             </div>
           </div>
