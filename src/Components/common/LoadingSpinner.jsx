@@ -3,7 +3,7 @@ import { Car } from 'lucide-react';
 
 const LoadingSpinner = () => {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-64 p-8 bg-black rounded-lg overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center h-screen min-h-64 p-8 bg-black rounded-lg overflow-hidden">
       {/* Background glow effect */}
       <div className="absolute inset-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse" />
