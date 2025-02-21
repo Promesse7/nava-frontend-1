@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ProtectedRoute from './Components/features/ProtectedRoute';
 import { UserDashboard, AdminDashboard } from './Components/pages/Dashboard';
 import AuthForm from './Components/auth/Authentication';
+import HomePage from './Components/pages/Home';
 import { AuthProvider } from './Components/auth/AuthContext';
 
 function App() {
@@ -9,7 +10,7 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<AuthForm />} />
           <Route 
             path="/dashboard" 

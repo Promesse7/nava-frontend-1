@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car } from 'lucide-react';
 
 const LoadingSpinner = () => {
+  const [animationState, setAnimationState] = useState('loading'); // State for controlling the animation
+
+  // Start the animation and change it after a timeout to simulate loading completion
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimationState('finished');
+    }, 5000); // Let's simulate the loader showing for 5 seconds
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="relative flex flex-col items-center justify-center h-screen min-h-64 p-8 bg-black rounded-lg overflow-hidden">
       {/* Background glow effect */}
@@ -20,7 +30,9 @@ const LoadingSpinner = () => {
       <div className="relative">
         {/* Glowing car effect */}
         <div className="absolute inset-0 bg-white/20 blur-xl animate-glow" />
-        <div className="relative transform animate-float">
+        <div
+          className={`relative transform ${animationState === 'loading' ? 'animate-float' : 'animate-move-right'}`}
+        >
           <Car className="w-16 h-16 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
         </div>
       </div>
@@ -70,6 +82,11 @@ const LoadingSpinner = () => {
           50% { transform: translate(30px, -20px) rotate(15deg); }
         }
 
+        @keyframes move-right {
+          0% { transform: translateX(-100%) opacity: 1; }
+          100% { transform: translateX(100%) opacity: 0; }
+        }
+
         .animate-float {
           animation: float 3s ease-in-out infinite;
         }
@@ -93,6 +110,10 @@ const LoadingSpinner = () => {
         .animate-glow-text {
           animation: glow 2s ease-in-out infinite;
           text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .animate-move-right {
+          animation: move-right 3s forwards ease-out;
         }
       `}</style>
     </div>

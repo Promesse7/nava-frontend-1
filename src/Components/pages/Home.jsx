@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import {Link, useNavigate} from 'react-router-dom';
 import { Search, Calendar, MapPin, Users, Clock, Bus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import Button from '../common/Button';
 
 const HomePage = () => {
   const [fromLocation, setFromLocation] = useState('');
   const [toLocation, setToLocation] = useState('');
   const [date, setDate] = useState('');
-
+  const navigate = useNavigate();
+  
   const popularRoutes = [
     { from: 'New York', to: 'Boston', price: '$45' },
     { from: 'Chicago', to: 'Detroit', price: '$35' },
@@ -147,6 +150,7 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+      <Button onClick={() => navigate('/login')}>Sign Up</Button> 
     </div>
   );
 };
