@@ -113,7 +113,7 @@ const DashboardLayout = ({ children, userType }) => {
       <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-black text-white transition-all duration-300`}>
         <div className="p-4">
           <h2 className={`text-xl font-bold ${!isSidebarOpen && 'hidden'}`}>
-            {userType === 'admin' ? 'Admin Panel' : 'MyBusTickets'}
+            {userType === 'admin' ? 'Admin Panel' : 'Nava-'}
           </h2>
         </div>
         <nav className="mt-8">
