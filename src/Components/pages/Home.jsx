@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { Search, Calendar, MapPin, Users, Clock, Bus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import Button from '../common/Button';

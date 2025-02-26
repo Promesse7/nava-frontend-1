@@ -214,7 +214,7 @@ const AuthForm = () => {
 
             <button
               type="submit"
-              className="w-full bg-black-600 text-white p-3 rounded-lg hover:bg-black-700"
+              className="w-full bg-black  border-gray-600 text-white p-3 rounded-lg hover:bg-black-700"
             >
               {isLogin ? "Sign In" : "Create Account"}
             </button>

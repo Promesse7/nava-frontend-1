@@ -4,6 +4,7 @@ import { UserDashboard, AdminDashboard } from './Components/pages/Dashboard';
 import AuthForm from './Components/auth/Authentication';
 import HomePage from './Components/pages/Home';
 import { AuthProvider } from './Components/auth/AuthContext';
+import UserProfile from './Components/auth/ProfilePage'
 
 function App() {
   return (
@@ -20,6 +21,16 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+         <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute requiredRole="common user">
+                <UserProfile />
+              </ProtectedRoute>
+            } 
+          />
+           
           <Route 
             path="/admin" 
             element={

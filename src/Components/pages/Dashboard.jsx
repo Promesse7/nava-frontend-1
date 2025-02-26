@@ -13,6 +13,7 @@ import {Link, useNavigate} from 'react-router-dom';
 // initializing Firebase
 import { auth, db } from "../../firebase"; // Ensure this is correctly imported
 import { doc, getDoc } from "firebase/firestore";
+import { getAuth} from "firebase/auth";
 import { getIdTokenResult, onAuthStateChanged, signOut } from "firebase/auth";
 
 
@@ -30,6 +31,11 @@ const DashboardLayout = ({ children, userType }) => {
   const [userData, setUserData] = useState(null);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const auth = getAuth();
+
+
+
+
 
   useEffect(() => {
     const fetchUserRoles = async (user) => {
@@ -50,25 +56,28 @@ const DashboardLayout = ({ children, userType }) => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch user data from Firebase Firestore
-  useEffect(() => {
+   // Fetch user data from Firestore
+   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userId) return;
+      const user = auth.currentUser; // Get current logged-in user
+      if (!user) return;
+
+      const userDocRef = doc(db, 'users', user.uid); // Reference to user document
       try {
-        const userRef = doc(db, "users", userId); // Assuming users are stored in "users" collection
-        const userSnap = await getDoc(userRef);
+        const userSnap = await getDoc(userDocRef);
         if (userSnap.exists()) {
-          setUserData(userSnap.data()); // Store user data in state
+          setUserData(userSnap.data());
         } else {
-          console.log("No user data found");
+          console.log('No user data found');
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error('Error fetching user data:', error);
       }
+      setLoading(false);
     };
 
     fetchUserData();
-  }, [userId]);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -117,24 +126,18 @@ const DashboardLayout = ({ children, userType }) => {
           </h2>
         </div>
         <nav className="mt-8">
-          {menuItems.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer"
-            >
-              {item.icon}
-              {/* Use Link if there is a path, otherwise call onClick */}
-              {item.path ? (
-                <Link to={item.path} className={!isSidebarOpen ? "hidden" : ""}>
-                  {item.label}
-                </Link>
-              ) : (
-                <button onClick={item.onClick} className={!isSidebarOpen ? "hidden" : ""}>
-                  {item.label}
-                </button>
-              )}
-            </div>
-          ))}
+        {menuItems.map((item, index) => (
+        <div
+          key={index}
+          className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer"
+          onClick={() => item.path && navigate(item.path)} // Navigate on click if a path exists
+        >
+          {item.icon}
+          {isSidebarOpen && (
+            <span>{item.label}</span>
+          )}
+        </div>
+      ))}
         </nav>
       </div>
 
@@ -171,7 +174,7 @@ const DashboardLayout = ({ children, userType }) => {
                   alt="User"
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="font-medium">User name</span>
+                <span className="font-medium">{userData.name}</span>
               </div>
             </div>
           </div>
