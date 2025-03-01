@@ -59,14 +59,16 @@ const AuthForm = () => {
         // Sign in with Firebase
         userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
         
-        // Fetch user role from Firestore (using UID, not email)
+        // Fetch user role and other details from Firestore
         const userRef = doc(db, "users", userCredential.user.uid);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-          userRole = userDoc.data().role;
+          const userData = userDoc.data();
+          userRole = userData.role; // Get role from Firestore
+          setFormData((prev) => ({ ...prev, ...userData })); // Update formData state with DB values
         } else {
-          setError("User role not found.");
+          setError("User data not found.");
           return;
         }
         
@@ -78,12 +80,27 @@ const AuthForm = () => {
         }
         userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
   
-        // Save user role in Firestore
-        const userRef = doc(db, "users", userCredential.user.uid);  // Use UID as document ID
+        // Determine role based on email
         if (adminUsers.includes(formData.email)) {
-          userRole = "admin"; // Hardcoded admin check
+          userRole = "admin";
         }
-        await setDoc(userRef, { role: userRole });  // Save role to Firestore
+  
+        // Prepare user data for Firestore
+        const userData = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          notifications: formData.notifications,
+          membershipType: formData.membershipType,
+          ticketHistory: formData.ticketHistory,
+          role: userRole, // Include role
+          updatedAt: new Date(), // Timestamp
+        };
+  
+        // Save full user data to Firestore
+        const userRef = doc(db, "users", userCredential.user.uid);
+        await setDoc(userRef, userData);
   
         console.log("User registered:", userCredential.user);
       }
@@ -98,9 +115,18 @@ const AuthForm = () => {
       // Reset form
       setFormData({
         name: "",
+        phone: "",
+        address: "",
         email: "",
         password: "",
         confirmPassword: "",
+        notifications: {
+          emailUpdates: true,
+          smsUpdates: true,
+        },
+        membershipType: "",
+        ticketHistory: "",
+        updatedAt: null,
       });
   
     } catch (err) {
@@ -108,6 +134,7 @@ const AuthForm = () => {
       console.error("Auth error:", err);
     }
   };
+  
   
 
   const toggleForm = () => {

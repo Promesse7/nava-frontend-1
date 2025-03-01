@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Clock, MapPin, Bus, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 
 const BusSchedule = () => {
   const [searchQuery, setSearchQuery] = useState('');

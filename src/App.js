@@ -4,7 +4,12 @@ import { UserDashboard, AdminDashboard } from './Components/pages/Dashboard';
 import AuthForm from './Components/auth/Authentication';
 import HomePage from './Components/pages/Home';
 import { AuthProvider } from './Components/auth/AuthContext';
-import UserProfile from './Components/auth/ProfilePage'
+import UserProfile from './Components/auth/ProfilePage';
+import Dashboard from './Components/pages/Admin';
+import BusSchedule from './Components/features/BusSchedule';
+import BusList from './Components/search/BusList';
+import FleetManagement from './Components/search/FleetManagement';
+
 
 function App() {
   return (
@@ -16,29 +21,37 @@ function App() {
           <Route 
             path="/dashboard" 
             element={
-              <ProtectedRoute requiredRole="common user">
-                <UserDashboard />
-              </ProtectedRoute>
+              <Dashboard />
             } 
           />
 
          <Route 
             path="/profile" 
             element={
-              <ProtectedRoute requiredRole="common user">
+             
                 <UserProfile />
-              </ProtectedRoute>
             } 
           />
            
-          <Route 
-            path="/admin" 
+        
+           
+        <Route 
+            path="/bus-entry" 
             element={
               <ProtectedRoute requiredRole="admin">
-                <AdminDashboard />
+                <FleetManagement />
               </ProtectedRoute>
             } 
           />
+        <Route 
+            path="/bus-list" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <BusList />
+              </ProtectedRoute>
+            } 
+          />
+
         </Routes>
       </AuthProvider>
     </Router>

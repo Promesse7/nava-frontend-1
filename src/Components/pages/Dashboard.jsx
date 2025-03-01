@@ -17,6 +17,8 @@ import { getAuth} from "firebase/auth";
 import { getIdTokenResult, onAuthStateChanged, signOut } from "firebase/auth";
 
 
+
+
 // Common Dashboard Layout Component
 const DashboardLayout = ({ children, userType }) => {
    const [loading, setLoading] = useState(true);
@@ -31,6 +33,7 @@ const DashboardLayout = ({ children, userType }) => {
   const [userData, setUserData] = useState(null);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+
   const auth = getAuth();
 
 
@@ -81,13 +84,25 @@ const DashboardLayout = ({ children, userType }) => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      console.log("User logged out successfully");
-      navigate("/login"); // Redirect to login page after logout
+      if (auth.currentUser) {
+        await signOut(auth);
+        console.log("User logged out successfully");
+  
+        // Clear stored auth state
+        setUserData(null);
+        localStorage.removeItem("auth");
+        localStorage.removeItem("role");
+  
+        // Redirect after logout
+        window.location.href = "/login";  // Ensures full reload
+      } else {
+        console.warn("No user is currently logged in.");
+      }
     } catch (error) {
       console.error("Logout Error:", error.message);
     }
   };
+  
 
 
   const userMenu = [
