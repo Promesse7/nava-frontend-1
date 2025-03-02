@@ -110,7 +110,7 @@ const AuthForm = () => {
       localStorage.setItem("role", userRole);
   
       // Redirect based on role
-      navigate(userRole === "admin" ? "/admin" : "/dashboard");
+      navigate("/dashboard");
   
       // Reset form
       setFormData({

@@ -6,6 +6,18 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [],
-}
+  plugins: [
+    require('@tailwindcss/forms'),  // Add this line
+  ],
 
+  animations: {
+    'spin-slow': 'spin 3s linear infinite',
+    'expand': 'expandWidth 2s ease-in-out forwards',
+  },
+  keyframes: {
+    expandWidth: {
+      '0%': { width: '0%' },
+      '100%': { width: '100%' }
+    }
+  }
+};

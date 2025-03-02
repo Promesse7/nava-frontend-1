@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './Components/features/ProtectedRoute';
-import { UserDashboard, AdminDashboard } from './Components/pages/Dashboard';
+import { UserDashboard, AdminDashboard } from './Components/pages/DashboardOld';
 import AuthForm from './Components/auth/Authentication';
 import HomePage from './Components/pages/Home';
 import { AuthProvider } from './Components/auth/AuthContext';
 import UserProfile from './Components/auth/ProfilePage';
-import Dashboard from './Components/pages/Admin';
+import Dashboard from './Components/pages/Dashboard';
 import BusSchedule from './Components/features/BusSchedule';
 import BusList from './Components/search/BusList';
 import FleetManagement from './Components/search/FleetManagement';
