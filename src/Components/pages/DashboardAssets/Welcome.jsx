@@ -35,7 +35,7 @@ const Welcome = ({ adminName }) => {
   }, []);
 
   return (
-    <div className={`bg-gradient-to-br h-[80%] from-gray-900 to-gray-800 text-white p-6 rounded-2xl shadow-lg transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+    <div className={`bg-gradient-to-br h-full from-gray-900 to-gray-800 text-white p-6 rounded-2xl shadow-lg transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
       {/* App Introduction Section */}
       <div className="mb-8 overflow-hidden">
         <div className="flex justify-between items-center mb-4">
@@ -89,7 +89,7 @@ const Welcome = ({ adminName }) => {
           >
             <PlusCircle size={18} /> I'm New Here
           </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-black to-text-indigo-50 hover:from-blue-500 hover:to-blue-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
+          <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-text-indigo-50 hover:from-blue-500 hover:to-blue-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
             <User size={18} className="animate-pulse" /> Manage Users
           </Button>
           <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
@@ -98,7 +98,12 @@ const Welcome = ({ adminName }) => {
           <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
             <Settings size={18} className="animate-spin-slow" /> Settings
           </Button>
-        
+          <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
+            <Settings size={18} className="animate-spin-slow" /> Settings
+          </Button>
+          <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
+            <Settings size={18} className="animate-spin-slow" /> Settings
+          </Button>
         </div>
       ) : (
         <div className={`bg-gray-800 p-6 rounded-xl mt-4 transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
@@ -131,7 +136,7 @@ const Welcome = ({ adminName }) => {
         </div>
       )}
       
-      <div className={`text-xs text-gray-500 mt-6 text-center transition-all duration-700 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`text-xs text-gray-500 mt-[200px] text-center bottom-0 transition-all duration-700 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
         Admin Dashboard Pro v0.5 • Designed for efficiency
       </div>
     </div>

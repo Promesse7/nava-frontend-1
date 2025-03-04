@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import Loader from '../common/LoadingSpinner';
-import DashboardHome from './DashboardAssets/DashboardHome';
-import Welcome from './DashboardAssets/Welcome';
-import Settings from './DashboardAssets/Settings';
 import { auth, db } from "../../firebase"; // Ensure this is correctly imported
 import { getDoc } from "firebase/firestore";
 import { getIdTokenResult, signOut } from "firebase/auth";
@@ -15,7 +12,13 @@ import {
 
 //displaying dashboards
 import FleetManagement from '../search/FleetManagement';
-
+import DashboardHome from './DashboardAssets/DashboardHome';
+import Welcome from './DashboardAssets/Welcome';
+import Settings from './DashboardAssets/Settings';
+import Payment from './DashboardAssets/PaymentDashboard';
+import CustomerManagement from './DashboardAssets/CustomerDashboard';
+import DriverManagement from './DashboardAssets/DriverManagament';
+import ReportsLogsDashboard from './DashboardAssets/ReportsLogs';
 
 const Dashboard = () => {
 
@@ -173,12 +176,11 @@ const Dashboard = () => {
       ];
 
       const userTabs = [
-        { icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z", label: 'My Profile', path:'/profile' },
+        { icon: <User size={20} className="text-black" />, label: 'My Profile', path:'/profile' },
         { icon: <Ticket size={20} className="text-black" />, label: 'My Bookings' },
         { icon: <Clock size={20} className="text-black" />, label: 'Travel History' },
         { icon: <CreditCard size={20} className="text-black" />, label: 'Payment Methods' },
-        { icon: <Settings size={20} className="text-black" />, label: 'Settings' }
-    
+   
       ];
   
       const renderContent = () => {
@@ -189,6 +191,14 @@ const Dashboard = () => {
             return <DashboardHome />;
           case "fleet":
             return <FleetManagement />;
+          case "driver":
+            return <DriverManagement />;
+          case "payment":
+            return <Payment />;
+          case "customer":
+            return <CustomerManagement />;
+          case "reports":
+              return <ReportsLogsDashboard />;
           case "settings":
             return <Settings />;
           default:
@@ -200,7 +210,7 @@ const Dashboard = () => {
     if (loading) return <Loader />;
 
   return (
-    <div className="w-full h-screen bg-gray-100 flex">
+    <div className="w-full h-screen bg-gray-100 flex overflow-hidden">
 
 
 
@@ -223,20 +233,20 @@ const Dashboard = () => {
             </div>
           </div>
           
-          <div className="mt-6 flex justify-around">
+          <div className="mt-6 flex justify-around cursor-pointer">
             <div className="flex flex-col items-center " onClick={() => navigate('/profile')}>
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span className="text-xs text-gray-600 mt-1">Profile</span>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center cursor-pointer">
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-xs text-gray-600 mt-1" onClick={handleFetchData}>Gallery</span>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center cursor-pointer">
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
@@ -246,7 +256,7 @@ const Dashboard = () => {
         </div>
         
         {/* Project Selection */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-3">
           <div className="bg-gray-200 rounded-md p-3 flex items-center justify-between">
             <span className="text-gray-700">Select Car</span>
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +266,7 @@ const Dashboard = () => {
         </div>
         
         {/* Menu Items */}
-        <nav className="mt-4 snap-y">
+        <nav className="snap-y">
           <div className="px-4 py-3 flex items-center space-x-3 text-gray-700 font-medium">
             <span>Home</span>
           </div>
@@ -291,43 +301,31 @@ const Dashboard = () => {
       </div>
     ))}
   </>
+
 )}
-    
-    {userData.role === "common user" && (
-  <>
-    {userTabs.map((tab) => (
-      <div 
-        key={tab.id} 
-        className="px-4 py-3 flex items-center space-x-3 text-black cursor-pointer hover:bg-gray transition"
-        onClick={() => setActiveTab(tab.id)}
-        title={tab.label}
-      >
-        <div className="w-6 h-6 rounded-md flex items-center justify-center">
-          <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-          </svg>
-        </div>
-        <span>{tab.label}</span>
-      </div>
-    ))}
-  </>
-)}
+
+
+{userData.role === "common user" && (
+        userTabs.map((tab) => (
+          <div 
+            key={tab.id} 
+            className="px-4 py-3 flex items-center space-x-3 text-black cursor-pointer hover:bg-gray-200 transition"
+            onClick={() => setActiveTab(tab.id)}
+            title={tab.label}
+          >
+            <div className="w-6 h-6 rounded-md flex items-center justify-center">
+              {tab.icon} {/* Now, all icons are React elements and can be rendered directly */}
+            </div>
+            <span>{tab.label}</span>
+          </div>
+        ))
+      )}
           
 
 
 
 {/*Common menu  items*/}
-          <div className="px-4 py-3 flex items-center space-x-3 text-gray-500">
-            <div className="w-6 h-6 rounded-md flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <span>Light Mode</span>
-            <div className="ml-auto w-8 h-4 bg-gray-800 rounded-full flex items-center relative">
-              <div className="absolute right-0 w-4 h-4 bg-white rounded-full shadow"></div>
-            </div>
-          </div>
+          
           
         
           

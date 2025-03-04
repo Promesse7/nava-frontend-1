@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ProtectedRoute from './Components/features/ProtectedRoute';
 import { UserDashboard, AdminDashboard } from './Components/pages/DashboardOld';
 import AuthForm from './Components/auth/Authentication';
-import HomePage from './Components/pages/Home';
+import HomePage from './Components/pages/LandingPage';
 import { AuthProvider } from './Components/auth/AuthContext';
 import UserProfile from './Components/auth/ProfilePage';
 import Dashboard from './Components/pages/Dashboard';

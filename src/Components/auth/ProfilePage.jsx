@@ -9,6 +9,7 @@ import { Switch } from "@headlessui/react";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState({
@@ -29,6 +30,7 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
+  const navigate = useNavigate();
 
   // Fetch user data from Firestore
   useEffect(() => {
@@ -149,7 +151,24 @@ const ProfilePage = () => {
   return (
     <div className=" mx-auto w-[80%] p-6 bg-white rounded-lg shadow-lg">
          <ToastContainer position="top-right" autoClose={3000} />
-      <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
+     {/* Header Section */}
+     <div className="flex items-center  w-full max-w-screen-lg px-2 mb-10">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 px-5 py-2 rounded-lg border border-gray-300 dark:border-gray-700 
+                     bg-transparent text-black shadow-md hover:shadow-lg 
+                     hover:bg-gray-200 transition-all duration-300"
+        >
+          Go Back
+        </button>
+
+        {/* Title */}
+        <h2 className="text-2xl font-extrabold text-black ml-20">
+          Profile Settings
+        </h2>
+      </div>
+
       <form onSubmit={handleUpdate} className="space-y-6">
         <div className="flex items-center space-x-4 mb-6">
           <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
