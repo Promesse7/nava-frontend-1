@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../../ui/Card";
 import { FaSearch, FaCar, FaClock, FaMapMarkerAlt, FaCreditCard } from "react-icons/fa";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app } from "@/firebaseConfig"; // Ensure firebase is initialized
+import { db } from "../../../firebase"; // Ensure firebase is initialized
 
-const db = getFirestore(app);
+
 
 const BookRide = () => {
   const [cars, setCars] = useState([]);

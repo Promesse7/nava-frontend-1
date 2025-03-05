@@ -7,7 +7,8 @@ module.exports = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/forms'),  // Add this line
+    require('@tailwindcss/forms'),
+    require('tailwind-scrollbar'),  // Add this line
   ],
 
   animations: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, onSnapshot, setDoc, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { Search, Calendar, AlertTriangle, MapPin, Droplet, Check, Car, Wrench, Clock, Plus, X } from 'lucide-react';
 
 

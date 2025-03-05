@@ -1,167 +1,207 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '../../../firebase'; // Ensure the correct path to your Firebase config
+import { collection, getDocs } from 'firebase/firestore';
 import { Phone, Mail, Star, Calendar, Clock, MapPin, Car, ThumbsUp, ThumbsDown, CheckCircle, XCircle, AlertTriangle, Search, Filter, ChevronDown, Eye, Edit, Trash, User, UserCheck, UserX } from 'lucide-react';
-
+import DriverForm from './DriverForm';
 const DriverManagement = () => {
   // Sample data for demonstration
-  const [drivers, setDrivers] = useState([
-    {
-      id: "DRV-42",
-      name: "Michael Rodriguez",
-      contact: {
-        email: "michael.r@example.com",
-        phone: "555-876-5432"
-      },
-      availability: {
-        status: "Available",
-        schedule: [
-          { day: "Monday", hours: "8:00 AM - 6:00 PM" },
-          { day: "Tuesday", hours: "8:00 AM - 6:00 PM" },
-          { day: "Wednesday", hours: "8:00 AM - 6:00 PM" },
-          { day: "Thursday", hours: "8:00 AM - 6:00 PM" },
-          { day: "Friday", hours: "8:00 AM - 6:00 PM" }
-        ],
-        nextAvailable: "2025-03-03T08:00:00"
-      },
-      performance: {
-        rating: 4.8,
-        totalTrips: 128,
-        totalFeedback: 87,
-        feedback: [
-          { id: "FB-001", bookingId: "BK-2025-001", rating: 5, comment: "Very professional and punctual", date: "2025-03-01" },
-          { id: "FB-002", bookingId: "BK-2024-098", rating: 5, comment: "Excellent service, very helpful with luggage", date: "2025-02-28" },
-          { id: "FB-003", bookingId: "BK-2024-087", rating: 4, comment: "Good driver, arrived on time", date: "2025-02-25" }
-        ]
-      },
-      assignedBookings: [
-        {
-          id: "BK-2025-001",
-          customer: "John Smith",
-          car: "Tesla Model 3",
-          time: "2025-03-10T09:00:00",
-          pickup: "Airport Terminal 2"
-        }
-      ],
-      pastBookings: [
-        {
-          id: "BK-2024-098",
-          customer: "Lisa Johnson",
-          car: "BMW 5 Series",
-          time: "2025-02-28T14:00:00",
-          pickup: "Downtown Hotel"
-        },
-        {
-          id: "BK-2024-087",
-          customer: "Robert Chen",
-          car: "Mercedes E-Class",
-          time: "2025-02-25T10:30:00",
-          pickup: "Convention Center"
-        }
-      ]
-    },
-    {
-      id: "DRV-28",
-      name: "Jennifer Adams",
-      contact: {
-        email: "jennifer.a@example.com",
-        phone: "555-321-9876"
-      },
-      availability: {
-        status: "On Duty",
-        schedule: [
-          { day: "Monday", hours: "7:00 AM - 3:00 PM" },
-          { day: "Tuesday", hours: "7:00 AM - 3:00 PM" },
-          { day: "Wednesday", hours: "Off" },
-          { day: "Thursday", hours: "7:00 AM - 3:00 PM" },
-          { day: "Friday", hours: "7:00 AM - 3:00 PM" }
-        ],
-        nextAvailable: "2025-03-05T07:00:00"
-      },
-      performance: {
-        rating: 4.9,
-        totalTrips: 156,
-        totalFeedback: 102,
-        feedback: [
-          { id: "FB-004", bookingId: "BK-2025-004", rating: 5, comment: "Outstanding service, very knowledgeable about the city", date: "2025-03-01" },
-          { id: "FB-005", bookingId: "BK-2024-092", rating: 5, comment: "Fantastic experience, would request again", date: "2025-02-27" },
-          { id: "FB-006", bookingId: "BK-2024-086", rating: 4, comment: "Great driver, smooth ride", date: "2025-02-25" }
-        ]
-      },
-      assignedBookings: [
-        {
-          id: "BK-2025-004",
-          customer: "Sarah Miller",
-          car: "Ford Escape",
-          time: "2025-03-15T12:00:00",
-          pickup: "Downtown Hotel Plaza"
-        }
-      ],
-      pastBookings: [
-        {
-          id: "BK-2024-092",
-          customer: "David Brown",
-          car: "Toyota Camry",
-          time: "2025-02-27T09:15:00",
-          pickup: "Corporate Offices"
-        },
-        {
-          id: "BK-2024-086",
-          customer: "Emma Watson",
-          car: "Audi A6",
-          time: "2025-02-25T16:45:00",
-          pickup: "Airport Terminal 1"
-        }
-      ]
-    },
-    {
-      id: "DRV-35",
-      name: "Alex Johnson",
-      contact: {
-        email: "alex.j@example.com",
-        phone: "555-111-2233"
-      },
-      availability: {
-        status: "On Leave",
-        schedule: [
-          { day: "Monday", hours: "9:00 AM - 7:00 PM" },
-          { day: "Tuesday", hours: "9:00 AM - 7:00 PM" },
-          { day: "Wednesday", hours: "9:00 AM - 7:00 PM" },
-          { day: "Thursday", hours: "Off" },
-          { day: "Friday", hours: "Off" }
-        ],
-        nextAvailable: "2025-03-10T09:00:00"
-      },
-      performance: {
-        rating: 4.6,
-        totalTrips: 95,
-        totalFeedback: 67,
-        feedback: [
-          { id: "FB-007", bookingId: "BK-2024-095", rating: 5, comment: "Very friendly and professional", date: "2025-02-26" },
-          { id: "FB-008", bookingId: "BK-2024-089", rating: 4, comment: "Good service overall", date: "2025-02-24" },
-          { id: "FB-009", bookingId: "BK-2024-078", rating: 4, comment: "Prompt and courteous", date: "2025-02-21" }
-        ]
-      },
-      assignedBookings: [],
-      pastBookings: [
-        {
-          id: "BK-2024-095",
-          customer: "Michael Chen",
-          car: "Lexus ES",
-          time: "2025-02-26T11:30:00",
-          pickup: "Grand Hotel"
-        },
-        {
-          id: "BK-2024-089",
-          customer: "Jessica Parker",
-          car: "Honda Accord",
-          time: "2025-02-24T14:15:00",
-          pickup: "Shopping Mall"
-        }
-      ]
-    }
-  ]);
+  const [showDriverPopup, setShowDriverPopup] = useState(false);
+  // const [drivers, setDrivers] = useState([
+  //   {
+  //     id: "DRV-42",
+  //     name: "Michael Rodriguez",
+  //     contact: {
+  //       email: "michael.r@example.com",
+  //       phone: "555-876-5432"
+  //     },
+  //     availability: {
+  //       status: "Available",
+  //       schedule: [
+  //         { day: "Monday", hours: "8:00 AM - 6:00 PM" },
+  //         { day: "Tuesday", hours: "8:00 AM - 6:00 PM" },
+  //         { day: "Wednesday", hours: "8:00 AM - 6:00 PM" },
+  //         { day: "Thursday", hours: "8:00 AM - 6:00 PM" },
+  //         { day: "Friday", hours: "8:00 AM - 6:00 PM" }
+  //       ],
+  //       nextAvailable: "2025-03-03T08:00:00"
+  //     },
+  //     performance: {
+  //       rating: 4.8,
+  //       totalTrips: 128,
+  //       totalFeedback: 87,
+  //       feedback: [
+  //         { id: "FB-001", bookingId: "BK-2025-001", rating: 5, comment: "Very professional and punctual", date: "2025-03-01" },
+  //         { id: "FB-002", bookingId: "BK-2024-098", rating: 5, comment: "Excellent service, very helpful with luggage", date: "2025-02-28" },
+  //         { id: "FB-003", bookingId: "BK-2024-087", rating: 4, comment: "Good driver, arrived on time", date: "2025-02-25" }
+  //       ]
+  //     },
+  //     assignedBookings: [
+  //       {
+  //         id: "BK-2025-001",
+  //         customer: "John Smith",
+  //         car: "Tesla Model 3",
+  //         time: "2025-03-10T09:00:00",
+  //         pickup: "Airport Terminal 2"
+  //       }
+  //     ],
+  //     pastBookings: [
+  //       {
+  //         id: "BK-2024-098",
+  //         customer: "Lisa Johnson",
+  //         car: "BMW 5 Series",
+  //         time: "2025-02-28T14:00:00",
+  //         pickup: "Downtown Hotel"
+  //       },
+  //       {
+  //         id: "BK-2024-087",
+  //         customer: "Robert Chen",
+  //         car: "Mercedes E-Class",
+  //         time: "2025-02-25T10:30:00",
+  //         pickup: "Convention Center"
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     id: "DRV-28",
+  //     name: "Jennifer Adams",
+  //     contact: {
+  //       email: "jennifer.a@example.com",
+  //       phone: "555-321-9876"
+  //     },
+  //     availability: {
+  //       status: "On Duty",
+  //       schedule: [
+  //         { day: "Monday", hours: "7:00 AM - 3:00 PM" },
+  //         { day: "Tuesday", hours: "7:00 AM - 3:00 PM" },
+  //         { day: "Wednesday", hours: "Off" },
+  //         { day: "Thursday", hours: "7:00 AM - 3:00 PM" },
+  //         { day: "Friday", hours: "7:00 AM - 3:00 PM" }
+  //       ],
+  //       nextAvailable: "2025-03-05T07:00:00"
+  //     },
+  //     performance: {
+  //       rating: 4.9,
+  //       totalTrips: 156,
+  //       totalFeedback: 102,
+  //       feedback: [
+  //         { id: "FB-004", bookingId: "BK-2025-004", rating: 5, comment: "Outstanding service, very knowledgeable about the city", date: "2025-03-01" },
+  //         { id: "FB-005", bookingId: "BK-2024-092", rating: 5, comment: "Fantastic experience, would request again", date: "2025-02-27" },
+  //         { id: "FB-006", bookingId: "BK-2024-086", rating: 4, comment: "Great driver, smooth ride", date: "2025-02-25" }
+  //       ]
+  //     },
+  //     assignedBookings: [
+  //       {
+  //         id: "BK-2025-004",
+  //         customer: "Sarah Miller",
+  //         car: "Ford Escape",
+  //         time: "2025-03-15T12:00:00",
+  //         pickup: "Downtown Hotel Plaza"
+  //       }
+  //     ],
+  //     pastBookings: [
+  //       {
+  //         id: "BK-2024-092",
+  //         customer: "David Brown",
+  //         car: "Toyota Camry",
+  //         time: "2025-02-27T09:15:00",
+  //         pickup: "Corporate Offices"
+  //       },
+  //       {
+  //         id: "BK-2024-086",
+  //         customer: "Emma Watson",
+  //         car: "Audi A6",
+  //         time: "2025-02-25T16:45:00",
+  //         pickup: "Airport Terminal 1"
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     id: "DRV-35",
+  //     name: "Alex Johnson",
+  //     contact: {
+  //       email: "alex.j@example.com",
+  //       phone: "555-111-2233"
+  //     },
+  //     availability: {
+  //       status: "On Leave",
+  //       schedule: [
+  //         { day: "Monday", hours: "9:00 AM - 7:00 PM" },
+  //         { day: "Tuesday", hours: "9:00 AM - 7:00 PM" },
+  //         { day: "Wednesday", hours: "9:00 AM - 7:00 PM" },
+  //         { day: "Thursday", hours: "Off" },
+  //         { day: "Friday", hours: "Off" }
+  //       ],
+  //       nextAvailable: "2025-03-10T09:00:00"
+  //     },
+  //     performance: {
+  //       rating: 4.6,
+  //       totalTrips: 95,
+  //       totalFeedback: 67,
+  //       feedback: [
+  //         { id: "FB-007", bookingId: "BK-2024-095", rating: 5, comment: "Very friendly and professional", date: "2025-02-26" },
+  //         { id: "FB-008", bookingId: "BK-2024-089", rating: 4, comment: "Good service overall", date: "2025-02-24" },
+  //         { id: "FB-009", bookingId: "BK-2024-078", rating: 4, comment: "Prompt and courteous", date: "2025-02-21" }
+  //       ]
+  //     },
+  //     assignedBookings: [],
+  //     pastBookings: [
+  //       {
+  //         id: "BK-2024-095",
+  //         customer: "Michael Chen",
+  //         car: "Lexus ES",
+  //         time: "2025-02-26T11:30:00",
+  //         pickup: "Grand Hotel"
+  //       },
+  //       {
+  //         id: "BK-2024-089",
+  //         customer: "Jessica Parker",
+  //         car: "Honda Accord",
+  //         time: "2025-02-24T14:15:00",
+  //         pickup: "Shopping Mall"
+  //       }
+  //     ]
+  //   }
+  // ]);
 
   // Filter and search states
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Fetch drivers data from Firestore
+  const fetchDrivers = async () => {
+    try {
+      setLoading(true);
+      const driversCollection = collection(db, 'drivers');
+      const driverSnapshot = await getDocs(driversCollection);
+      const driverList = driverSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDrivers(driverList);
+      setFilteredDrivers(driverList);
+    } catch (err) {
+      console.error('Error fetching drivers: ', err);
+      setError('Failed to fetch drivers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  // Filter drivers based on search term
+  useEffect(() => {
+    const filtered = drivers.filter((driver) =>
+      driver.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredDrivers(filtered);
+  }, [searchTerm, drivers]);
+
+
   const [showFilters, setShowFilters] = useState(false);
   const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [ratingFilter, setRatingFilter] = useState('All');
@@ -170,28 +210,36 @@ const DriverManagement = () => {
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
   const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'bookings', 'schedule', 'feedback'
+  const [filteredDrivers, setFilteredDrivers] = useState([]);
 
   // Apply filters and search
-  const filteredDrivers = drivers.filter(driver => {
-    // Search functionality
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
-      driver.name.toLowerCase().includes(searchLower) ||
-      driver.id.toLowerCase().includes(searchLower) ||
-      driver.contact.email.toLowerCase().includes(searchLower);
-    
-    // Availability filter
-    const matchesAvailability = availabilityFilter === 'All' || driver.availability.status === availabilityFilter;
-    
-    // Rating filter
-    let matchesRating = true;
-    if (ratingFilter !== 'All') {
-      const minRating = parseFloat(ratingFilter);
-      matchesRating = driver.performance.rating >= minRating;
-    }
-    
-    return matchesSearch && matchesAvailability && matchesRating;
-  });
+  useEffect(() => {
+    const updatedFilteredDrivers = drivers.filter(driver => {
+      // Search functionality
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        driver.name.toLowerCase().includes(searchLower) ||
+        driver.id.toLowerCase().includes(searchLower) ||
+        (driver.contact?.email && driver.contact.email.toLowerCase().includes(searchLower)); // Safe access with optional chaining
+      
+      // Availability filter
+      const matchesAvailability = availabilityFilter === 'All' || driver.availability.status === availabilityFilter;
+      
+      // Rating filter
+      let matchesRating = true;
+      if (ratingFilter !== 'All') {
+        const minRating = parseFloat(ratingFilter);
+        matchesRating = driver.performance.rating >= minRating;
+      }
+  
+      return matchesSearch && matchesAvailability && matchesRating;
+    });
+  
+    // Update the filteredDrivers state
+    setFilteredDrivers(updatedFilteredDrivers);
+  }, [drivers, searchTerm, availabilityFilter, ratingFilter]); // Add dependencies to re-run the effect when any filter changes
+  
+
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -285,7 +333,7 @@ const DriverManagement = () => {
               </button>
               
               {/* Action button */}
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+              <button className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md"  onClick={() => setShowDriverPopup(true)} >
                 + Add New Driver
               </button>
             </div>
@@ -880,6 +928,11 @@ const DriverManagement = () => {
           </div>
         </div>
       )}
+
+      <DriverForm 
+        showPopup={showDriverPopup} 
+        setShowPopup={setShowDriverPopup} 
+      />
     </div>
   );
 };

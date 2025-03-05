@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../../firebase';
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
+  const location = useLocation();
   const navigate = useNavigate();
   const db = getFirestore();
 
@@ -32,8 +33,13 @@ export const AuthProvider = ({ children }) => {
         setUserRole(null);
         localStorage.removeItem("auth");
         localStorage.removeItem("role");
-        navigate("/login");
+        
+        const protectedRoutes = ["/dashboard", "/profile", "/settings"];
+        if (protectedRoutes.includes(location.pathname)) {
+          navigate("/login");
+        }
       }
+      
       setLoading(false);
     });
 

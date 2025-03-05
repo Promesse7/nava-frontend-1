@@ -12,7 +12,7 @@ const ReportsLogsDashboard = () => {
   ];
   
   return (
-    <div className="w-full bg-white rounded-lg shadow-md">
+    <div className="w-full h-full bg-white rounded-lg shadow-md overflow-y-scroll scrollbar-thin scrollbar-thumb-black scrollbar-track-white">
       {/* Header */}
       <div className="border-b p-4">
         <h1 className="text-xl font-semibold text-gray-800">Reports & Logs</h1>
@@ -40,7 +40,7 @@ const ReportsLogsDashboard = () => {
       </div>
       
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 overflow-hidden">
         {activeTab === 'revenue' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

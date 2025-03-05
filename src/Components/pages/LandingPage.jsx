@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Plane, Calendar, CreditCard, MapPin, ChevronRight } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LandingPage = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const navigate = useNavigate();
 
   const bookingSteps = [
     {
@@ -33,7 +35,7 @@ const LandingPage = () => {
       <header className="p-6 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <Plane className="w-10 h-10 text-blue-700" />
-          <h1 className="text-2xl font-bold text-gray-800">TravelEase</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Travel Rwanda</h1>
         </div>
         <nav className="space-x-6">
           <a href="#" className="text-gray-700 hover:text-blue-600 transition">Home</a>
@@ -77,19 +79,19 @@ const LandingPage = () => {
             <div className="flex space-x-4 items-center mb-4">
               <MapPin className="w-8 h-8 text-blue-600" />
               <div>
-                <h4 className="font-semibold text-gray-800">New York</h4>
+                <h4 className="font-semibold text-gray-800">Kigali</h4>
                 <p className="text-sm text-gray-500">Destination Selected</p>
               </div>
             </div>
             <div className="flex space-x-4 items-center mb-4">
               <Calendar className="w-8 h-8 text-green-600" />
               <div>
-                <h4 className="font-semibold text-gray-800">June 15, 2024</h4>
+                <h4 className="font-semibold text-gray-800">March 15, 2025</h4>
                 <p className="text-sm text-gray-500">Departure Date</p>
               </div>
             </div>
-            <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center">
-              Continue Booking <ChevronRight className="ml-2" />
+            <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center" onClick={ () => navigate('/login')} >
+              Start Booking <ChevronRight className="ml-2" />
             </button>
           </div>
         </div>
@@ -97,7 +99,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-gray-100 p-6 text-center">
-        <p className="text-gray-600">© 2024 TravelEase. All rights reserved.</p>
+        <p className="text-gray-600">© 2025 Travel Rwanda. All rights reserved.</p>
       </footer>
     </div>
   );

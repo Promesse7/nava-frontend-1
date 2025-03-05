@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../../ui/Card";
 import { FaCalendarCheck, FaHistory, FaEdit, FaStar } from "react-icons/fa";
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { app } from "@/firebaseConfig"; // Ensure firebase is initialized
+import { db } from "../../../firebase"; // Ensure firebase is initialized
 
-const db = getFirestore(app);
 
 const MyBookings = ({ userId }) => {
   const [upcomingTrips, setUpcomingTrips] = useState([]);

@@ -10,7 +10,7 @@ import {
   User, Ticket, Clock, LogOut,   CreditCard
 } from 'lucide-react';
 
-//displaying dashboards
+//Displaying Admin dashboards
 import FleetManagement from '../search/FleetManagement';
 import DashboardHome from './DashboardAssets/DashboardHome';
 import Welcome from './DashboardAssets/Welcome';
@@ -19,6 +19,16 @@ import Payment from './DashboardAssets/PaymentDashboard';
 import CustomerManagement from './DashboardAssets/CustomerDashboard';
 import DriverManagement from './DashboardAssets/DriverManagament';
 import ReportsLogsDashboard from './DashboardAssets/ReportsLogs';
+
+
+// Displaying Common user dashboards
+import Overview from './DashboardAssets/Overview';
+import MyBookings from './DashboardAssets/MyBookings';
+import PaymentMethods from './DashboardAssets/PaymentTransctions';
+// import Messages from './DashboardAssets/Messages';
+import RoutesPricing from './DashboardAssets/RoutesPricing';
+import BookRide from './DashboardAssets/BookRide';
+import SupportHelpCenter from './DashboardAssets/SupportHelpCenter';
 
 const Dashboard = () => {
 
@@ -167,11 +177,11 @@ const Dashboard = () => {
   };
 
       const adminTabs = [
-        { id: "driver", label: "Driver Management", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-        { id: "fleet", label: "Fleet Management", icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" },
-        { id: "payment", label: "Payment & Transactions", icon: "M4 6h16M4 10h16M4 14h16M4 18h16" },
-        { id: "customer", label: "Customer Management", icon: "M4 6h16M4 10h16M4 14h16M4 18h16" },
-        { id: "report", label: "Reports & Logs", icon: "M4 6h16M4 10h16M4 14h16M4 18h16" },
+        { id: "driver", label: "Driver Management", icon: "M5 16v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M12 10a4 4 0 1 0-8 0 4 4 0 0 0 8 0M20 21h-4M8 21H4M12 18h0" },
+        { id: "fleet", label: "Fleet Management", icon: "M3 13h18M5 13V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5M5 17h2m10 0h2M3 13h2m14 0h2M6 17a1 1 0 1 1 2 0m8 0a1 1 0 1 1-2 0" },
+        { id: "payment", label: "Payment & Transactions", icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
+        { id: "customer", label: "Customer Management", icon: "M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0M20 8v6M23 11h-6" },
+        { id: "report", label: "Reports & Logs", icon: "M7 8h10M7 12h10M7 16h6M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" },
         { id: "message", label: "Messages", icon: "M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" },
       ];
 
@@ -184,38 +194,62 @@ const Dashboard = () => {
       ];
   
       const renderContent = () => {
-        switch (activeTab) {
-          case "welcome":
-            return <Welcome />;
-          case "dashboard":
-            return <DashboardHome />;
-          case "fleet":
-            return <FleetManagement />;
-          case "driver":
-            return <DriverManagement />;
-          case "payment":
-            return <Payment />;
-          case "customer":
-            return <CustomerManagement />;
-          case "reports":
-              return <ReportsLogsDashboard />;
-          case "settings":
-            return <Settings />;
-          default:
-            return <Welcome />;
+        // Admin user role will have access to more tabs, render specific components
+        if (userData.role === "admin") {
+          switch (activeTab) {
+            case "welcome":
+              return <Welcome />;
+            case "dashboard":
+              return <DashboardHome />;
+            case "fleet":
+              return <FleetManagement />;
+            case "driver":
+              return <DriverManagement />;
+            case "payment":
+              return <Payment />;
+            case "customer":
+              return <CustomerManagement />;
+            case "report":
+                return <ReportsLogsDashboard />;
+            case "settings":
+              return <Settings />;
+            default:
+              return <Welcome />;
+          }
+        } 
+        // Regular user role will have access to limited tabs
+        else if (userData.role === "Common user") {
+          switch (activeTab) {
+            case "overview":
+              return <Overview />;
+            case "my-bookings":
+              return <MyBookings />;
+            case "support":
+              return <SupportHelpCenter />;
+            case "payment-methods":
+              return <PaymentMethods />;
+                        case "routes-pricing":
+              return <RoutesPricing />;
+            case "book-ride":
+              return <BookRide />;
+            default:
+              return <DashboardHome />;
+          }
         }
+        return null; // No content until user role is determined
       };
+      
       
   
     if (loading) return <Loader />;
 
   return (
-    <div className="w-full h-screen bg-gray-100 flex overflow-hidden">
+    <div className="w-full h-screen bg-gray-100 flex overflow-hidden  ">
 
 
 
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md h-full">
+      <div className="w-64 bg-white shadow-md h-full overflow-y-auto  scrollbar-thin scrollbar-thumb-black scrollbar-track-white">
         {/* Profile Section */}
         <div className="bg-gradient-to-r from-gray-300 to-gray-200 p-4">
           <div className="flex flex-col items-center">
@@ -271,14 +305,21 @@ const Dashboard = () => {
             <span>Home</span>
           </div>
           
-          <div className="px-4 py-3 flex items-center space-x-3 bg-gray-100 border-r-4 border-gray-800 text-gray-800 font-medium" onClick={() => setActiveTab("dashboard")} title='Dashboard'>
+          <div 
+      className={`px-4 py-3 flex items-center space-x-3 border-r-4 font-medium 
+        ${activeTab === "dashboard" 
+          ? "bg-gray-100 border-gray-800 text-gray-800" 
+          : "bg-gray-200 border-transparent text-gray-600"}`} 
+      onClick={() => setActiveTab("dashboard")} 
+      title='Dashboard'
+    >
             <div className="w-6 h-6 rounded-md bg-gray-700 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
             </div>
             <span>Dashboard</span>
-            <div className="w-2 h-2 rounded-full bg-gray-800 ml-auto"></div>
+            <div className="w-2 h-2 rounded-full bg-gray-800 ml-auto" ></div>
           </div>
  
     {/* Admin menu items */}

@@ -28,6 +28,7 @@ const DashboardLayout = ({ children, userType }) => {
       setLoading(false);
     }, 3000);
   }, []);
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userRoles, setUserRoles] = useState([]);
   const [userData, setUserData] = useState(null);

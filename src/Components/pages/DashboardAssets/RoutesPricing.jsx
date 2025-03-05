@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../../ui/Card";
 import { FaMapMarkerAlt, FaDollarSign, FaClock } from "react-icons/fa";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
-import { app } from "@/firebaseConfig"; // Ensure Firebase is initialized
+import { db } from "../../../firebase"; // Ensure Firebase is initialized
 
-const db = getFirestore(app);
+
 
 const RoutesPricing = () => {
   const [routes, setRoutes] = useState([]);

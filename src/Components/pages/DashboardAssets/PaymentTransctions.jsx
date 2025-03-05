@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../../ui/Card";
 import { FaWallet, FaCreditCard, FaHistory, FaUndo } from "react-icons/fa";
 import { getFirestore, doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { app } from "@/firebaseConfig";
+import { db } from "../../../firebase";
 
-const db = getFirestore(app);
 
 const PaymentTransactions = ({ userId }) => {
   const [walletBalance, setWalletBalance] = useState(0);
