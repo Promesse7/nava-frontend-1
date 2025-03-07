@@ -1,31 +1,36 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "../../ui/Card";
-import { FaCalendarCheck, FaHistory, FaEdit, FaStar } from "react-icons/fa";
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../../../firebase"; // Ensure firebase is initialized
+import { FaEdit, FaStar } from "react-icons/fa";
+import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "../../../firebase";
 
-
-const MyBookings = ({ userId }) => {
+const MyBookings = () => {
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [pastTrips, setPastTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const tripsQuery = query(collection(db, "bookings"), where("userId", "==", userId));
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const tripsQuery = query(collection(db, "bookings"), where("userId", "==", user.uid));
         const tripDocs = await getDocs(tripsQuery);
         const trips = tripDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         setUpcomingTrips(trips.filter(trip => trip.status === "upcoming"));
         setPastTrips(trips.filter(trip => trip.status === "completed"));
       } catch (error) {
-        console.error("Error fetching trips:", error);
+        console.error("Error fetching bookings:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [userId]);
+  }, []);
 
   const cancelBooking = async (tripId) => {
     try {
@@ -35,6 +40,8 @@ const MyBookings = ({ userId }) => {
       console.error("Error canceling trip:", error);
     }
   };
+
+  if (loading) return <p>Loading bookings...</p>;
 
   return (
     <motion.div 
