@@ -6,9 +6,7 @@ import { getDoc } from "firebase/firestore";
 import { getIdTokenResult, signOut } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import {
-  User, Ticket, Clock, LogOut,   CreditCard
-} from 'lucide-react';
+
 
 //Displaying Admin dashboards
 import FleetManagement from '../search/FleetManagement';
@@ -62,24 +60,6 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState("welcome");
     const navigate = useNavigate();
 
-    useEffect(() => {
-      const fetchUserRoles = async (user) => {
-        if (user) {
-          try {
-            const tokenResult = await getIdTokenResult(user);
-            setUserRoles(tokenResult.claims.role || []);
-          } catch (error) {
-            console.error("Error fetching user roles:", error);
-          }
-        }
-      };
-  
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        fetchUserRoles(user);
-      });
-  
-      return () => unsubscribe();
-    }, []);
   
      // Fetch user data from Firestore
      useEffect(() => {
@@ -188,10 +168,10 @@ const Dashboard = () => {
     const userTabs = [
   { id: "overview", label: "Overview", icon: "M3 3h18M3 9h18M3 15h18M3 21h18" },
   { id: "my-bookings", label: "My Bookings", icon: "M5 6h14M5 12h14M5 18h14" },
-  { id: "support", label: "Support Help Center", icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
+  { id: "support", label: "Support Help Center", icon: "M5 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
   { id: "payment-methods", label: "Payment Methods", icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
-  { id: "routes-pricing", label: "Routes & Pricing", icon: "M3 4h18M3 10h18M3 16h18M3 22h18" },
-  { id: "book-ride", label: "Book a Ride", icon: "M5 16v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M12 10a4 4 0 1 0-8 0 4 4 0 0 0 8 0" },
+  { id: "routes-pricing", label: "Routes & Pricing", icon: "M4 6h16M4 18h16M12 6v12M9 9h3m3 0h3m-9 6h6" },
+  { id: "book-ride", label: "Book a Ride", icon: "M5 16v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M3 12h2m14 0h2M8 7h.01M16 7h.01M12 2a5 5 0 0 1 5 5c0 1.38-.56 2.63-1.46 3.54A3 3 0 0 1 12 14a3 3 0 0 1-3.54-3.46A5 5 0 0 1 12 2z" },
 ];
 
 
@@ -236,7 +216,7 @@ const Dashboard = () => {
             case "book-ride":
               return <BookRide />;
             default:
-              return <DashboardHome />;
+              return <Welcome />;
           }
         }
         return null; // No content until user role is determined
@@ -303,7 +283,7 @@ const Dashboard = () => {
         </div>
         
         {/* Menu Items */}
-        <nav className="snap-y">
+        <nav className="snap-y overflow-hidden">
           <div className="px-4 py-3 flex items-center space-x-3 text-gray-700 font-medium">
             <span>Home</span>
           </div>
@@ -332,7 +312,7 @@ const Dashboard = () => {
     {adminTabs.map((tab) => (
       <div 
         key={tab.id} 
-        className="px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition"
+        className="px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition  "
         onClick={() => setActiveTab(tab.id)}
         title={tab.label}
       >
@@ -352,17 +332,19 @@ const Dashboard = () => {
 {userData.role === "common user" && (
         userTabs.map((tab) => (
           <div 
-            key={tab.id} 
-            className="px-4 py-3 flex items-center space-x-3 text-black cursor-pointer hover:bg-gray-200 transition"
-            onClick={() => setActiveTab(tab.id)}
-            title={tab.label}
-          >
-            <div className="w-6 h-6 rounded-md flex items-center justify-center">
-              {tab.icon} {/* Now, all icons are React elements and can be rendered directly */}
-            </div>
-            <span>{tab.label}</span>
+          key={tab.id} 
+          className="px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition  "
+          onClick={() => setActiveTab(tab.id)}
+          title={tab.label}
+        >
+          <div className="w-6 h-6 rounded-md flex items-center justify-center">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
+            </svg>
           </div>
-        ))
+          <span>{tab.label}</span>
+        </div>
+      ))
       )}
           
 

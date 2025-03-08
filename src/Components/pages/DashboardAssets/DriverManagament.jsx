@@ -5,7 +5,6 @@ import { Phone, Mail, Star, Calendar, Clock, MapPin, Car, ThumbsUp, ThumbsDown, 
 import DriverForm from './DriverForm';
 
 const DriverManagement = () => {
-  // Sample data for demonstration
   const [showDriverPopup, setShowDriverPopup] = useState(false);
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,12 +31,25 @@ const DriverManagement = () => {
         // Ensure all required nested objects exist
         return {
           id: doc.id,
-          name: data.name || 'Unknown Driver',
-          contact: data.contact || { email: '', phone: '' },
+          name: data.firstName && data.lastName 
+            ? `${data.firstName} ${data.lastName}` 
+            : data.name || 'Unknown Driver',
+          contact: {
+            email: data.email || (data.contact && data.contact.email) || '',
+            phone: data.phoneNumber || (data.contact && data.contact.phone) || ''
+          },
           availability: data.availability || { status: 'Unknown', nextAvailable: null, schedule: [] },
           performance: data.performance || { rating: 0, totalTrips: 0, totalFeedback: 0, feedback: [] },
           assignedBookings: data.assignedBookings || [],
-          pastBookings: data.pastBookings || []
+          pastBookings: data.pastBookings || [],
+          licenseNumber: data.licenseNumber || '',
+          licenseExpiryDate: data.licenseExpiryDate || '',
+          address: data.address || '',
+          dateOfBirth: data.dateOfBirth || '',
+          emergencyContact: {
+            name: data.emergencyContactName || '',
+            phone: data.emergencyContactPhone || ''
+          }
         };
       });
       setDrivers(driverList);
@@ -56,27 +68,6 @@ const DriverManagement = () => {
   useEffect(() => {
     fetchDrivers();
   }, []);
-
-  // Filter drivers based on search term only - separate from the main filter function
-  useEffect(() => {
-    if (!drivers || drivers.length === 0) {
-      setFilteredDrivers([]);
-      return;
-    }
-    
-    const filtered = drivers.filter((driver) => {
-      if (!driver) return false;
-      
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        (driver.name && driver.name.toLowerCase().includes(searchLower)) ||
-        (driver.id && driver.id.toLowerCase().includes(searchLower)) ||
-        (driver.contact && driver.contact.email && driver.contact.email.toLowerCase().includes(searchLower))
-      );
-    });
-    
-    setFilteredDrivers(filtered);
-  }, [searchTerm, drivers]);
 
   // Apply all filters
   useEffect(() => {
@@ -118,7 +109,7 @@ const DriverManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     try {
-      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateString).toLocaleDateString(undefined, options);
     } catch (e) {
       return 'Invalid Date';
@@ -156,6 +147,68 @@ const DriverManagement = () => {
     setSelectedDriver(null);
   };
 
+  // Handle adding a new driver
+  const handleAddDriver = () => {
+    setShowDriverPopup(true);
+  };
+
+  // Handle edit driver
+  const handleEditDriver = (driver) => {
+    setSelectedDriver(driver);
+    setShowDriverPopup(true);
+  };
+
+  // Handle driver form submission
+  const handleDriverFormSubmit = async (driverData) => {
+    // Logic to save to Firestore would go here
+    setShowDriverPopup(false);
+    await fetchDrivers(); // Refresh the list
+  };
+
+  // Handle toggle filters
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  // Render the filters panel
+  const renderFilters = () => {
+    if (!showFilters) return null;
+
+    return (
+      <div className="p-4 bg-white border rounded-md shadow-sm mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+            <select
+              value={availabilityFilter}
+              onChange={(e) => setAvailabilityFilter(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="All">All Availability</option>
+              <option value="Available">Available</option>
+              <option value="On Duty">On Duty</option>
+              <option value="On Leave">On Leave</option>
+              <option value="Unavailable">Unavailable</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Rating</label>
+            <select
+              value={ratingFilter}
+              onChange={(e) => setRatingFilter(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="All">All Ratings</option>
+              <option value="4.5">4.5+</option>
+              <option value="4">4.0+</option>
+              <option value="3.5">3.5+</option>
+              <option value="3">3.0+</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  };
   // Get star rating display
   const renderStarRating = (rating) => {
     if (rating === undefined || rating === null) return <span className="text-gray-500">No rating</span>;

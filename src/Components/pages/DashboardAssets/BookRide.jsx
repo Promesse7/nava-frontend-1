@@ -5,28 +5,29 @@ import { FaSearch, FaCar, FaClock, FaMapMarkerAlt, FaCreditCard } from "react-ic
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase"; // Ensure firebase is initialized
 import BookingForm from "../../../Components/booking/BookingForm"; // Import the BookingForm component
+import { getAllVehicles } from "../../../services/fleetService";
 
 const BookRide = () => {
   const [cars, setCars] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCar, setSelectedCar] = useState(null);
-
+  
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const carsCollection = await getDocs(collection(db, "cars"));
-        setCars(carsCollection.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const vehicles = await getAllVehicles();
+        setCars(vehicles.filter(vehicle => vehicle.status === 'available'));
       } catch (error) {
-        console.error("Error fetching cars:", error);
+        console.error("Error fetching available vehicles:", error);
       }
     };
-
+    
     fetchCars();
   }, []);
 
   return (
     <motion.div 
-      className="p-6 space-y-6"
+      className="p-6 space-y-6 bg-white h-full overflow-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -77,7 +78,7 @@ const BookRide = () => {
       {/* Display booking form if a car is selected */}
       {selectedCar && (
         <motion.div 
-          className="p-6 bg-white shadow-md rounded-lg"
+          className="p-6 bg-white shadow-md rounded-lg "
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -93,7 +94,7 @@ const BookRide = () => {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
         {cars
           .filter(car => car.name.toLowerCase().includes(search.toLowerCase()))
           .map(car => (
@@ -103,7 +104,7 @@ const BookRide = () => {
               onClick={() => setSelectedCar(car)}
             >
               <Card className="p-6 shadow-xl space-y-4 cursor-pointer">
-                <img src={car.image} alt={car.name} className="w-full h-40 object-cover rounded" />
+                <img src={car.image} alt={car.name} className="w-full h-30 object-cover rounded" />
                 <CardContent>
                   <h2 className="text-xl font-semibold">{car.name}</h2>
                   <p className="text-gray-600">{car.type} - ${car.price}/day</p>

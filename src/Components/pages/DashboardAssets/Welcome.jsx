@@ -1,24 +1,68 @@
 import { useState, useEffect } from "react";
 import Button from "../../ui/Button";
-import { User, FileText, Settings, PlusCircle, ArrowRight } from "lucide-react";
 
-const Welcome = ({ adminName }) => {
-  const [isNewAdmin, setIsNewAdmin] = useState(false);
+import { User, FileText, Settings, PlusCircle, ArrowRight, BarChart, Calendar, MessageSquare, Bell } from "lucide-react";
+import { getIdTokenResult, onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+
+const Welcome = ({ userName, userRole = "user" }) => {
+  const [isNewUser, setIsNewUser] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [UserData, setUserData] = useState(null);
+  const [userRoles, setUserRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+   // Simulate data fetching
+   setTimeout(() => {
+     setLoading(false);
+   }, 3000);
+ }, []);
+
+ // Fetch user data from Firestore
+ useEffect(() => {
+  const fetchUserData = async () => {
+    const user = auth.currentUser; // Get current logged-in user
+    if (!user) return;
+
+    const userDocRef = doc(db, 'users', user.uid); // Reference to user document
+    try {
+      const userSnap = await getDoc(userDocRef);
+      if (userSnap.exists()) {
+        setUserData(userSnap.data());
+      } else {
+        console.log('No user data found');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+    setLoading(false);
+  };
+
+  fetchUserData();
+}, []);
+
+const isAdmin = UserData?.role === 'admin';
+
 
   const appInfo = [
     {
-      title: "Admin Dashboard Pro",
-      description: "A powerful admin dashboard for managing your organization's resources, users, and analytics in one place."
+      title: isAdmin ? "Admin Dashboard Pro" : "User Dashboard",
+      description: isAdmin 
+        ? "A powerful admin dashboard for managing your organization's resources, users, and analytics in one place."
+        : "Access your personal dashboard to manage tasks, view analytics, and stay connected."
     },
     {
       title: "Streamlined Workflow",
-      description: "Simplify management tasks with our intuitive interface designed for maximum productivity."
+      description: "Simplify your daily tasks with our intuitive interface designed for maximum productivity."
     },
     {
-      title: "Data-Driven Decisions",
-      description: "Access comprehensive analytics and reports to make informed business decisions."
+      title: "Data-Driven Insights",
+      description: isAdmin 
+        ? "Access comprehensive analytics and reports to make informed business decisions."
+        : "Track your performance metrics and personal statistics to improve productivity."
     }
   ];
 
@@ -35,12 +79,16 @@ const Welcome = ({ adminName }) => {
   }, []);
 
   return (
-    <div className={`bg-gradient-to-br h-full from-gray-900 to-gray-800 text-white p-6 rounded-2xl shadow-lg transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-      {/* App Introduction Section */}
+<div className={`bg-gradient-to-br h-full 
+  ${isAdmin ? 'from-gray-950 to-gray-800' : 'from-gray-900 to-gray-700'} 
+  text-white p-6 rounded-2xl shadow-2xl transition-all duration-700 
+  ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+
+    {/* App Introduction Section */}
       <div className="mb-8 overflow-hidden">
         <div className="flex justify-between items-center mb-4">
           <h1 className={`text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-100 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-            Admin Dashboard Pro
+            {isAdmin ? "Admin Dashboard Pro" : "User Dashboard"}
           </h1>
           <div className={`flex space-x-2 transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
             {appInfo.map((_, index) => (
@@ -72,54 +120,78 @@ const Welcome = ({ adminName }) => {
 
       <div className={`transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
         <h2 className="text-3xl font-bold mb-3 flex items-center">
-          <span className="mr-2">Welcome, {adminName || "Admin"}</span>
+          <span className="mr-2">Welcome, {userName || (isAdmin ? "Admin" : "User")}</span>
           <span className="animate-bounce inline-block">👋</span>
         </h2>
         <p className="text-gray-400 mb-5">
-          Manage your dashboard efficiently. Start with key tasks below or set up
-          if you're new.
+          {isAdmin 
+            ? "Manage your dashboard efficiently. Start with key tasks below or set up if you're new."
+            : "Access your personalized dashboard. Get started with the tools below or complete your setup."}
         </p>
       </div>
 
-      {!isNewAdmin ? (
+      {!isNewUser ? (
         <div className={`grid grid-cols-2 gap-4 transition-all duration-700 delay-400 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-              <Button
-            className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg"
-            onClick={() => setIsNewAdmin(true)}
+          <Button
+            className={`flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-lg`}
+            onClick={() => setIsNewUser(true)}
           >
             <PlusCircle size={18} /> I'm New Here
           </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-text-indigo-50 hover:from-blue-500 hover:to-blue-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
-            <User size={18} className="animate-pulse" /> Manage Users
-          </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
-            <FileText size={18} className="animate-pulse" /> View Reports
-          </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
-            <Settings size={18} className="animate-spin-slow" /> Settings
-          </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
-            <Settings size={18} className="animate-spin-slow" /> Settings
-          </Button>
-          <Button className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg">
-            <Settings size={18} className="animate-spin-slow" /> Settings
-          </Button>
+          
+          {isAdmin ? (
+  <>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <User size={18} className="animate-pulse" /> Manage Users
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <FileText size={18} className="animate-pulse" /> View Reports
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <Settings size={18} className="animate-spin-slow" /> Settings
+    </Button>
+  </>
+) : (
+  <>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <Calendar size={18} className="animate-pulse" /> My Schedule
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <BarChart size={18} className="animate-pulse" /> My Analytics
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <MessageSquare size={18} className="animate-pulse" /> Messages
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <Bell size={18} className="animate-pulse" /> Notifications
+    </Button>
+    <Button className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white transform hover:-translate-y-1 transition-all duration-300 shadow-xl">
+      <User size={18} className="animate-pulse" /> My Profile
+    </Button>
+  </>
+)}
+
         </div>
       ) : (
-        <div className={`bg-gray-800 p-6 rounded-xl mt-4 transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        <div className={`bg-${isAdmin ? 'gray' : 'blue'}-800 p-6 rounded-xl mt-4 transition-all duration-500 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
           <h3 className="text-xl font-semibold flex items-center">
             <span className="mr-2">Getting Started</span>
             <span className="animate-pulse inline-block">🚀</span>
           </h3>
           <ul className="text-gray-400 mt-4 space-y-3">
-            {[
+            {isAdmin ? [
               "Set up your admin profile",
               "Configure user roles",
               "Review system settings",
               "Explore dashboard features"
+            ] : [
+              "Complete your user profile",
+              "Set your notification preferences",
+              "Explore available features",
+              "Connect with team members"
             ].map((item, index) => (
               <li key={index} className={`flex items-center transition-all duration-500 delay-${200 + index * 100}`}>
-                <span className="text-green-400 mr-2">✓</span>
+                <span className="text-grey-400 mr-2">✓</span>
                 <span className="relative">
                   {item}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 animate-expand"></span>
@@ -128,8 +200,8 @@ const Welcome = ({ adminName }) => {
             ))}
           </ul>
           <Button
-            className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transform hover:-translate-y-1 transition-all duration-300 shadow-lg flex items-center"
-            onClick={() => setIsNewAdmin(false)}
+            className={`mt-6 bg-gradient-to-r ${isAdmin ? 'from-gray-600 to-black hover:from-gray-500 hover:to-black' : 'from-gray-600 to-black hover:from-gray-500 hover:to-black'} transform hover:-translate-y-1 transition-all duration-300 shadow-lg flex items-center`}
+            onClick={() => setIsNewUser(false)}
           >
             Back to Dashboard <ArrowRight size={16} className="ml-2" />
           </Button>
@@ -137,12 +209,10 @@ const Welcome = ({ adminName }) => {
       )}
       
       <div className={`text-xs text-gray-500 mt-[200px] text-center bottom-0 transition-all duration-700 delay-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-        Admin Dashboard Pro v0.5 • Designed for efficiency
+        {isAdmin ? "Admin Dashboard Pro" : "User Dashboard"} v0.5 • Designed for efficiency
       </div>
     </div>
   );
 };
-
-
 
 export default Welcome;

@@ -215,10 +215,11 @@ const ProfilePage = () => {
           <Input label="Password" type="password" value={userData.password} onChange={(e) => setUserData({...userData, password: e.target.value})} />
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className="flex items-center space-x-4">
           <label className="text-gray-600">Theme:</label>
           <select
-            className="border rounded p-2"
+            className="border rounded p-2 w-40"
             value={userData.theme}
             onChange={(e) => setUserData({...userData, theme: e.target.value})}
           >
@@ -227,26 +228,11 @@ const ProfilePage = () => {
           </select>
         </div>
          {/* Notification Preferences */}
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Email Notifications
-        </span>
-        <Switch
-          checked={emailNotifications}
-          onChange={setEmailNotifications}
-          className={`$ {emailNotifications ? 'bg-gray-900' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full`}
-        >
-          <span className="sr-only">Enable Email Notifications</span>
-          <span
-            className={`$ {emailNotifications ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform bg-white rounded-full transition`}
-          />
-        </Switch>
-      </div>
-
-        <div className="flex items-center space-x-4">
+    
+        <div className="flex items-center space-x-4 ">
           <label className="text-gray-600">Language:</label>
           <select
-            className="border rounded p-2"
+            className="border rounded p-2 w-40"
             value={userData.language}
             onChange={(e) => setUserData({...userData, language: e.target.value})}
           >
@@ -255,6 +241,9 @@ const ProfilePage = () => {
             <option value="Spanish">Spanish</option>
           </select>
         </div>
+        </div>
+
+        
 
         <div className="flex items-center">
           <input

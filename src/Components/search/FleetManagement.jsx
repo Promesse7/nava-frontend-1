@@ -3,6 +3,9 @@ import { db } from '../../firebase';
 import { collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { Search, Calendar, AlertTriangle, MapPin, Droplet, Check, Car, Wrench, Clock, Plus, X } from 'lucide-react';
 
+import { getAllVehicles, deleteVehicle } from '../../services/fleetService';
+import { getDriverById } from '../../services/driverService';
+// import VehicleRegistrationForm from '../pages/DashboardAssets/Fleet/VehicleRegistrationForm';
 
 const FleetManagement = () => {
   const [fleetData, setFleetData] = useState({
@@ -32,7 +35,38 @@ const FleetManagement = () => {
     arrivalTime: '',
     route: ''
   });
-
+  const [vehicles, setVehicles] = useState([]);
+  const [error, setError] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [carToDelete, setCarToDelete] = useState(null);
+  
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const vehiclesList = await getAllVehicles();
+        
+        // Fetch driver details for each vehicle
+        const vehiclesWithDrivers = await Promise.all(
+          vehiclesList.map(async (vehicle) => {
+            if (vehicle.driverId) {
+              const driver = await getDriverById(vehicle.driverId);
+              return { ...vehicle, driver };
+            }
+            return vehicle;
+          })
+        );
+        
+        setVehicles(vehiclesWithDrivers);
+      } catch (err) {
+        console.error("Error fetching vehicles:", err);
+        setError("Failed to load vehicles. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchVehicles();
+  }, []);
 
 
   useEffect(() => {
@@ -63,22 +97,69 @@ const FleetManagement = () => {
   }, []);
   
 
+    // Show delete confirmation
+    const handleDeleteClick = (car) => {
+      setCarToDelete(car);
+      setShowConfirm(true);
+    };
+  
+    // Delete car
+    const confirmDelete = async () => {
+      if (!carToDelete) return;
+  
+      try {
+        await deleteVehicle(carToDelete.id);
+        setShowConfirm(false);
+        setCarToDelete(null);
+        fetchVehicles(); // Refresh the list
+      } catch (error) {
+        console.error("Error deleting vehicle:", error);
+      }
+    };
+
   const handleChange = (e) => {
-    setNewCar({ ...newCar, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewCar(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'fleet'), newCar);
+      // Create the seat layout
+      const totalSeats = parseInt(newCar.seats) || 16; // Default to 16 if not provided
+      
+      // Create the layout object
+      const layout = {};
+      for (let i = 1; i <= totalSeats; i++) {
+        const seatNumber = i.toString();
+        layout[seatNumber] = {
+          status: "available",
+          bookedBy: null
+        };
+      }
+      
+      // Add the seats structure to the newCar object
+      const carWithSeats = {
+        ...newCar,
+        seats: {
+          total: totalSeats,
+          available: totalSeats,
+          layout: layout
+        }
+      };
+      
+      // Add to database
+      await addDoc(collection(db, 'fleet'), carWithSeats);
+      
       setShowPopup(false);
       setNewCar({
         type: '', name: '', driver: '', plate: '', seats: '', status: 'available',
         fuelLevel: '', location: '', lastService: '', departureTime: '', arrivalTime: '', route: ''
       });
-      alert('New car added successfully!');
+      alert('New car added successfully with seat layout!');
     } catch (error) {
       console.error('Error adding new car:', error);
+      alert('Error adding car: ' + error.message);
     }
   };
 
