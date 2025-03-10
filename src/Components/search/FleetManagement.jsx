@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, getDocs } from 'firebase/firestore';
 import { Search, Calendar, AlertTriangle, MapPin, Droplet, Check, Car, Wrench, Clock, Plus, X } from 'lucide-react';
 
 import { getAllVehicles, deleteVehicle } from '../../services/fleetService';
@@ -39,32 +39,29 @@ const FleetManagement = () => {
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [carToDelete, setCarToDelete] = useState(null);
+  const [drivers, setDrivers] = useState([]);
+  const [departureDate, setDepartureDate] = useState("");
+
+
+  const fetchVehicles = async () => {
+    try {
+      const vehiclesList = await getAllVehicles();
   
+      // Ensure each vehicle has an `id`
+      setVehicles(vehiclesList.map(vehicle => ({
+        id: vehicle.id, // ✅ Now, every vehicle has an `id`
+        ...vehicle
+      })));
+    } catch (err) {
+      console.error("Error fetching vehicles:", err);
+      setError("Failed to load vehicles. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const vehiclesList = await getAllVehicles();
-        
-        // Fetch driver details for each vehicle
-        const vehiclesWithDrivers = await Promise.all(
-          vehiclesList.map(async (vehicle) => {
-            if (vehicle.driverId) {
-              const driver = await getDriverById(vehicle.driverId);
-              return { ...vehicle, driver };
-            }
-            return vehicle;
-          })
-        );
-        
-        setVehicles(vehiclesWithDrivers);
-      } catch (err) {
-        console.error("Error fetching vehicles:", err);
-        setError("Failed to load vehicles. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchVehicles();
   }, []);
 
@@ -96,27 +93,55 @@ const FleetManagement = () => {
     return () => unsubscribe(); // Cleanup listener when component unmounts
   }, []);
   
+  // Fetch drivers from Firestore when component loads
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const driversRef = collection(db, "drivers");
+        const snapshot = await getDocs(driversRef);
+        const driversList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setDrivers(driversList);
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    };
+
+    fetchDrivers();
+  }, []);
 
     // Show delete confirmation
     const handleDeleteClick = (car) => {
+      if (!car || !car.id) {
+        console.error("Error: Car object is invalid", car);
+        return;
+      }
+      
+      console.log("Selected car for deletion:", car); // Debugging log
       setCarToDelete(car);
       setShowConfirm(true);
     };
+    
   
     // Delete car
     const confirmDelete = async () => {
-      if (!carToDelete) return;
-  
+      if (!carToDelete || !carToDelete.id) {
+        console.error("Error: No valid car selected for deletion");
+        return;
+      }
+    
       try {
         await deleteVehicle(carToDelete.id);
         setShowConfirm(false);
         setCarToDelete(null);
-        fetchVehicles(); // Refresh the list
+        fetchVehicles(); // Refresh vehicle list
       } catch (error) {
         console.error("Error deleting vehicle:", error);
       }
     };
-
+    
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewCar(prev => ({ ...prev, [name]: value }));
@@ -124,44 +149,67 @@ const FleetManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     try {
-      // Create the seat layout
-      const totalSeats = parseInt(newCar.seats) || 16; // Default to 16 if not provided
-      
-      // Create the layout object
+      // Ensure all required fields are filled
+      if (!newCar.name || !newCar.type || !newCar.plate) {
+        alert("Please fill in all required fields: Name, Type, and Plate.");
+        return;
+      }
+  
+      // Ensure seats is a valid number
+      const totalSeats = Number.isInteger(parseInt(newCar.seats)) ? parseInt(newCar.seats) : 16;
+  
+      // Create the seat layout object
       const layout = {};
       for (let i = 1; i <= totalSeats; i++) {
-        const seatNumber = i.toString();
-        layout[seatNumber] = {
+        layout[i.toString()] = {
           status: "available",
           bookedBy: null
         };
       }
-      
-      // Add the seats structure to the newCar object
+  
+      // Add seat structure to the vehicle object
       const carWithSeats = {
         ...newCar,
         seats: {
           total: totalSeats,
           available: totalSeats,
-          layout: layout
+          layout
         }
       };
-      
-      // Add to database
-      await addDoc(collection(db, 'fleet'), carWithSeats);
-      
+  
+      // Add car to Firestore and store the document ID
+      const vehicleRef = await addDoc(collection(db, "fleet"), carWithSeats);
+      const vehicleId = vehicleRef.id;
+  
+      // Update Firestore to include the auto-generated ID in the document
+      await updateDoc(doc(db, "fleet", vehicleId), { id: vehicleId });
+  
+      // Reset form and close popup
       setShowPopup(false);
       setNewCar({
-        type: '', name: '', driver: '', plate: '', seats: '', status: 'available',
-        fuelLevel: '', location: '', lastService: '', departureTime: '', arrivalTime: '', route: ''
+        type: "",
+        name: "",
+        driver: "",
+        plate: "",
+        seats: "",
+        status: "available",
+        fuelLevel: "",
+        location: "",
+        lastService: "",
+        departureTime: "",
+        arrivalTime: "",
+        route: ""
       });
-      alert('New car added successfully with seat layout!');
+  
+      alert("New car added successfully with seat layout!");
     } catch (error) {
-      console.error('Error adding new car:', error);
-      alert('Error adding car: ' + error.message);
+      console.error("Error adding new car:", error);
+      alert("Error adding car: " + error.message);
     }
   };
+  
 
   
   // Filter data based on search term
@@ -233,6 +281,7 @@ const FleetManagement = () => {
       
       {/* Content based on active tab */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
+        
         {/* Available Cars */}
         {activeTab === 'available' && (
           <div>
@@ -278,7 +327,7 @@ const FleetManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{car.lastService}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm">
+                        <button className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"  onClick={() => handleDeleteClick(car)}>
                           Remove
                         </button>
                       </td>
@@ -287,7 +336,7 @@ const FleetManagement = () => {
                 </tbody>
               </table>
             </div>
-            <button onClick={() => setShowPopup(true)} className="mt-4 mb-4 px-4 py-3 bg-blue-600 text-white rounded flex items-center mx-auto block">
+            <button onClick={() => setShowPopup(true)} className="mt-4 mb-4 px-4 py-3 bg-blue-600 text-white rounded flex items-center mx-auto ">
               <Plus className="mr-2" /> Add New Car
             </button>
 
@@ -301,22 +350,119 @@ const FleetManagement = () => {
               <X size={24} />
             </button>
             <h2 className="text-lg font-bold mb-4">Add New Car</h2>
-            <form className='flex flex-col h-[80vh] overflow-y-auto' onSubmit={handleSubmit}>
-              {Object.keys(newCar).map((key) => (
-                <div key={key} className="mt-4">
-                  <label className="block text-gray-700 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-                  <input
-                    type="text"
-                    name={key}
-                    value={newCar[key]}
-                    onChange={handleChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-              ))}
-              <button type="submit" className="mt-4 px-4 py-2 bg-green-500 text-white rounded">Save Car</button>
-            </form>
+            <form className='flex flex-col h-[80vh] overflow-y-auto' onSubmit={handleSubmit}> 
+  <h2 className="text-xl font-semibold">Register a New Vehicle</h2>
+
+  {/* Car Name */}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">Car Name</label>
+    <input
+      type="text"
+      name="name"
+      value={newCar.name}
+      onChange={(e) => setNewCar({ ...newCar, name: e.target.value })}
+      className="w-full p-2 border rounded"
+      required
+    />
+  </div>
+
+  {/* Driver Selection Dropdown */}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">Assign Driver</label>
+    <select
+      name="driverId"
+      value={newCar.driverId}
+      onChange={(e) => setNewCar({ ...newCar, driverId: e.target.value })}
+      className="w-full p-2 border rounded"
+      required
+    >
+      <option value="">Select a Driver</option>
+      {drivers.map(driver => (
+        <option key={driver.id} value={driver.id}>
+          {driver.firstName} - {driver.licenseNumber}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* License Plate */}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">License Plate</label>
+    <input
+      type="text"
+      name="plate"
+      value={newCar.plate}
+      onChange={(e) => setNewCar({ ...newCar, plate: e.target.value })}
+      className="w-full p-2 border rounded"
+      required
+    />
+  </div>
+
+  {/* Departure Date & Time */}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">Departure Date & Time</label>
+    <input
+      type="datetime-local"
+      value={departureDate}
+      onChange={(e) => setDepartureDate(e.target.value)}
+      className="w-full p-2 border rounded"
+      required
+    />
+  </div>
+
+  {/* Arrival Time */}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">Arrival Time</label>
+    <input
+      type="text"
+      name="arrivalTime"
+      value={newCar.arrivalTime}
+      onChange={(e) => setNewCar({ ...newCar, arrivalTime: e.target.value })}
+      className="w-full p-2 border rounded"
+      required
+    />
+  </div>
+
+  {/* Dynamically Generated Fields (excluding predefined ones) */}
+  {Object.keys(newCar).map((key) => {
+    // Only render keys that are not predefined fields
+    if (!['name', 'driverId', 'plate', 'departureDate', 'arrivalTime'].includes(key)) {
+      return (
+        <div key={key} className="mt-4">
+          <label className="block text-sm font-medium text-gray-700">{key.replace(/([A-Z])/g, ' $1').trim()}</label>
+          <input
+            type="text"
+            name={key}
+            value={newCar[key]}
+            onChange={(e) => setNewCar({ ...newCar, [key]: e.target.value })}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+      );
+    }
+    return null;
+  })}
+
+  {/* Submit and Cancel Buttons */}
+  <div className="flex justify-end space-x-2 mt-4">
+    <button
+      type="button"
+      className="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500"
+      onClick={() => setShowPopup(false)}
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+    >
+      Register Vehicle
+    </button>
+  </div>
+</form>
+
+
           </div>
         </div>
       )}
@@ -550,6 +696,21 @@ const FleetManagement = () => {
           </div>
         )}
       </div>
+
+
+          {/* Delete Confirmation Popup */}
+          {showConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h2 className="text-lg font-semibold mb-4">Are you sure you want to delete {carToDelete?.name}?</h2>
+            <div className="flex justify-center space-x-4">
+              <button onClick={() => confirmDelete()} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">Delete</button>
+              <button onClick={() => setShowConfirm(false)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

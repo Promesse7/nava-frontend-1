@@ -89,25 +89,28 @@ export const addSeatLayout = async (fleetId, totalSeats = 16) => {
 
 // Update seat status (when booking is made or cancelled)
 export const updateSeatStatus = async (fleetId, seatNumber, status, userId = null) => {
+  if (!["booked", "available"].includes(status)) {
+    throw new Error("Invalid seat status. Must be 'booked' or 'available'.");
+  }
+
+  if (status === "booked" && !userId) {
+    throw new Error("User ID is required when booking a seat.");
+  }
+
   try {
     const fleetRef = doc(db, "fleet", fleetId);
-    
-    // Prepare the update object
     const seatUpdate = {};
-    
-    // Update the specific seat in the layout
+
     seatUpdate[`seats.layout.${seatNumber}.status`] = status;
-    
+
     if (status === "booked" && userId) {
       seatUpdate[`seats.layout.${seatNumber}.bookedBy`] = userId;
-      // Decrement available seats - Fixed the increment method
       seatUpdate["seats.available"] = increment(-1);
     } else if (status === "available") {
       seatUpdate[`seats.layout.${seatNumber}.bookedBy`] = null;
-      // Increment available seats - Fixed the increment method
       seatUpdate["seats.available"] = increment(1);
     }
-    
+
     await updateDoc(fleetRef, seatUpdate);
     return true;
   } catch (error) {
@@ -115,6 +118,30 @@ export const updateSeatStatus = async (fleetId, seatNumber, status, userId = nul
     throw error;
   }
 };
+
+// If seat layout doesn't exist, automatically create a default one
+export const ensureSeatLayout = async (fleetId, totalSeats = 16) => {
+  try {
+    const fleetRef = doc(db, "fleet", fleetId);
+    const fleetSnap = await getDoc(fleetRef);
+
+    if (!fleetSnap.exists()) {
+      throw new Error("Vehicle not found");
+    }
+
+    // Check if seats exist, if not create the default layout
+    const fleetData = fleetSnap.data();
+    if (!fleetData.seats || !fleetData.seats.layout) {
+      await addSeatLayout(fleetId, totalSeats);
+    }
+
+    return { success: true, message: "Seat layout ensured" };
+  } catch (error) {
+    console.error("Error ensuring seat layout: ", error);
+    throw error;
+  }
+};
+
 
 // Get available seats for a vehicle
 export const getAvailableSeats = async (fleetId) => {
@@ -151,11 +178,11 @@ export const getAllVehicles = async () => {
     const querySnapshot = await getDocs(fleetRef);
 
     return querySnapshot.docs.map(doc => ({
-      id: doc.id,
+      id: doc.id,  // ✅ Ensure Firestore's auto-generated ID is included
       ...doc.data()
     }));
   } catch (error) {
-    console.error("Error getting all vehicles: ", error);
+    console.error("Error getting all vehicles:", error);
     throw error;
   }
 };
@@ -163,7 +190,17 @@ export const getAllVehicles = async () => {
 // Function to delete a vehicle
 export const deleteVehicle = async (vehicleId) => {
   try {
+    if (!vehicleId) {
+      throw new Error("Invalid vehicle ID");
+    }
+
     const vehicleRef = doc(db, "fleet", vehicleId);
+    const vehicleSnap = await getDoc(vehicleRef);
+
+    if (!vehicleSnap.exists()) {
+      throw new Error("Vehicle not found in database");
+    }
+
     await deleteDoc(vehicleRef);
     return true;
   } catch (error) {
@@ -171,3 +208,5 @@ export const deleteVehicle = async (vehicleId) => {
     throw error;
   }
 };
+
+

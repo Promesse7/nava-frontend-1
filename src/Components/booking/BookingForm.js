@@ -9,6 +9,7 @@ const BookingForm = () => {
   const [selectedFleet, setSelectedFleet] = useState('');
   const [fleetOptions, setFleetOptions] = useState([]);
   const [selectedSeat, setSelectedSeat] = useState('');
+  const [availableRoutes, setAvailableRoutes] = useState([]);
   const [amount, setAmount] = useState(5000);
   const [loadingFleets, setLoadingFleets] = useState(false);
   const [fleetError, setFleetError] = useState('');
@@ -123,7 +124,7 @@ useEffect(() => {
             )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <label htmlFor="route" className="block text-sm font-medium text-gray-700">Route</label>
                 <div className="relative">
                   <select 
@@ -135,8 +136,9 @@ useEffect(() => {
                     aria-describedby={fleetError ? "route-error" : undefined}
                   >
                     <option value="">Select a route</option>
-                    <option value="Muhanga-Rubavu">Muhanga-Rubavu</option>
-                    <option value="Kigali-Musanze">Kigali-Musanze</option>
+                    {availableRoutes.map((routeOption) => (
+                      <option key={routeOption} value={routeOption}>{routeOption}</option>
+                    ))}
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                     <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

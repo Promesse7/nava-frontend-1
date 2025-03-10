@@ -98,8 +98,8 @@ const LandingPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 p-6 text-center">
-        <p className="text-gray-600">© 2025 Travel Rwanda. All rights reserved.</p>
+      <footer className=" p-6 text-center">
+        <p className="text-gray-600">© 2025 Travel Rwanda by PromCode. All rights reserved.</p>
       </footer>
     </div>
   );
