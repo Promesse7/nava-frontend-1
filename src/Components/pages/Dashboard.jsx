@@ -168,10 +168,10 @@ const Dashboard = () => {
     const userTabs = [
   { id: "overview", label: "Overview", icon: "M3 3h18M3 9h18M3 15h18M3 21h18" },
   { id: "my-bookings", label: "My Bookings", icon: "M5 6h14M5 12h14M5 18h14" },
+  { id: "book-ride", label: "Book a Ride", icon: "M5 16v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M3 12h2m14 0h2M8 7h.01M16 7h.01M12 2a5 5 0 0 1 5 5c0 1.38-.56 2.63-1.46 3.54A3 3 0 0 1 12 14a3 3 0 0 1-3.54-3.46A5 5 0 0 1 12 2z" },
   { id: "support", label: "Support Help Center", icon: "M5 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
   { id: "payment-methods", label: "Payment Methods", icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4" },
   { id: "routes-pricing", label: "Routes & Pricing", icon: "M4 6h16M4 18h16M12 6v12M9 9h3m3 0h3m-9 6h6" },
-  { id: "book-ride", label: "Book a Ride", icon: "M5 16v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M3 12h2m14 0h2M8 7h.01M16 7h.01M12 2a5 5 0 0 1 5 5c0 1.38-.56 2.63-1.46 3.54A3 3 0 0 1 12 14a3 3 0 0 1-3.54-3.46A5 5 0 0 1 12 2z" },
 ];
 
 

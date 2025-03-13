@@ -8,6 +8,7 @@ const useBooking = () => {
   const [error, setError] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [availableSeats, setAvailableSeats] = useState([]);
+  const [seatError, setSeatError] = useState('');
   
   // Create a new booking
   const makeBooking = async (fleetId, route, departureDate, seatNumber, amount) => {
@@ -57,22 +58,28 @@ const useBooking = () => {
     }
   };
   
-  // Get available seats for a vehicle
-  const fetchAvailableSeats = async (fleetId) => {
+  const fetchAvailableSeats = async (fleetId, date) => {
     setLoading(true);
-    setError(null);
-    
     try {
       const seats = await getAvailableSeats(fleetId);
-      setAvailableSeats(seats.availableSeats);
-      setLoading(false);
-      return seats;
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      throw err;
+      console.log("Fetched seats:", seats); // Logs the seat data
+      if (seats.length === 0) {
+        setSeatError('No available seats for this vehicle.');
+      } else {
+        setAvailableSeats(seats); // Set the available seats to state
+        setSeatError(''); // Clear any previous error
+      }
+    } catch (error) {
+      console.error("Error fetching seats:", error.message);
+      setAvailableSeats([]); // Clear seats in case of error
+      setSeatError("No seat data received.");
+    } finally {
+      setLoading(false); // Set loading to false after the operation is complete
     }
   };
+  
+  
+  
   
   // Cancel a booking
   const cancelBooking = async (bookingId, fleetId, seatNumber) => {

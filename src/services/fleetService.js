@@ -147,29 +147,39 @@ export const ensureSeatLayout = async (fleetId, totalSeats = 16) => {
 export const getAvailableSeats = async (fleetId) => {
   try {
     const fleet = await getFleetById(fleetId);
-    
-    // If seat layout doesn't exist, try to create a default one
-    if (!fleet.seats || !fleet.seats.layout) {
-      // You could decide to automatically create a default layout:
-      // await addSeatLayout(fleetId, 16); // Creates a layout with 16 seats
-      // const updatedFleet = await getFleetById(fleetId);
-      // return getAvailableSeats(fleetId); // Try again with the new layout
-      
-      // Or simply throw an error:
-      throw new Error("Seat layout not found for this vehicle");
+
+    if (!fleet || !fleet.seats) {
+      throw new Error("Fleet data not found or is invalid.");
     }
-    
+
+    // If seat layout doesn't exist, create a default layout
+    if (!fleet.seats.layout) {
+      console.warn(`No seat layout found for fleet ID ${fleetId}. Creating a default layout...`);
+      
+      await addSeatLayout(fleetId, 16); // Creates a default layout with 16 seats
+      const updatedFleet = await getFleetById(fleetId);
+      if (!updatedFleet.seats?.layout) {
+        throw new Error("Failed to create a seat layout for this vehicle.");
+      }
+
+      return getAvailableSeats(fleetId); // Retry fetching after layout creation
+    }
+
     // Find available seats
     const availableSeats = Object.entries(fleet.seats.layout)
       .filter(([_, seatData]) => seatData.status === "available")
       .map(([seatNumber, _]) => seatNumber);
-    
-    return availableSeats;
+
+    console.log("Available seats:", availableSeats); // Debugging log to check available seats
+    return availableSeats.length > 0 ? availableSeats : [];
+
   } catch (error) {
-    console.error("Error getting available seats: ", error);
+    console.error("Error getting available seats:", error.message);
     throw error;
   }
 };
+
+
 
 // Get all fleet vehicles
 export const getAllVehicles = async () => {
@@ -209,4 +219,26 @@ export const deleteVehicle = async (vehicleId) => {
   }
 };
 
+// Get all available routes from the fleet collection
+export const getAvailableRoutes = async () => {
+  try {
+    const fleetRef = collection(db, "fleet");
+    const querySnapshot = await getDocs(fleetRef);
+
+    const routesSet = new Set();
+    querySnapshot.forEach((doc) => {
+      const route = doc.data().route;
+      if (route) {
+        routesSet.add(route);
+      }
+    });
+
+    const routesArray = Array.from(routesSet);
+    console.log("Available Routes:", routesArray);
+    return routesArray;
+  } catch (error) {
+    console.error("Error getting available routes:", error);
+    return []; // Return an empty array on error
+  }
+};
 
