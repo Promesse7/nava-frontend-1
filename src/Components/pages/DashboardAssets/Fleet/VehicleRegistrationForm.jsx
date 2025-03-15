@@ -7,7 +7,12 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
     driverId: '',
     plate: '',
     arrivalTime: '',
-    // Any other dynamic fields will be preserved
+    seats: '16',  // Default value for seats
+    type: '',     // Added as required in original form
+    fuelLevel: '',
+    location: '',
+    lastService: '',
+    route: '',
   });
   
   const [departureDate, setDepartureDate] = useState('');
@@ -23,7 +28,7 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
     // Create a FormData object to prepare for Cloudinary upload
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'nava-travel'); // Replace with your Cloudinary upload preset
+    formData.append('upload_preset', 'vehicle_images'); // Replace with your Cloudinary upload preset
     
     try {
       // Upload to Cloudinary
@@ -45,13 +50,23 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
     }
   };
   
+  // Modified to match the parent component's expected behavior
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Ensure all required fields are filled
+    if (!newCar.name || !newCar.plate || !newCar.type) {
+      alert("Please fill in all required fields: Name, Type, and Plate.");
+      return;
+    }
+    
     // Combine all form data
     const formData = {
       ...newCar,
       departureDate,
     };
+    
+    // Pass data to parent component's handler
     onSubmitForm(formData);
   };
   
@@ -93,6 +108,23 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
                 />
               </div>
               
+              {/* Vehicle Type - Added from original form */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Car size={18} />
+                  Vehicle Type
+                </label>
+                <input
+                  type="text"
+                  name="type"
+                  value={newCar.type}
+                  onChange={(e) => setNewCar({ ...newCar, type: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="e.g. Sedan, SUV, Bus"
+                  required
+                />
+              </div>
+              
               {/* License Plate */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
@@ -121,7 +153,6 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
                   value={newCar.driverId}
                   onChange={(e) => setNewCar({ ...newCar, driverId: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                  required
                 >
                   <option value="">Select a Driver</option>
                   {drivers.map((driver) => (
@@ -132,47 +163,21 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
                 </select>
               </div>
               
-              {/* Image Upload */}
+              {/* Number of Seats */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                  <Upload size={18} />
-                  Vehicle Image
+                  <User size={18} />
+                  Number of Seats
                 </label>
-                <div className="mt-1 flex items-center">
-                  <div className="w-full flex flex-col items-center">
-                    {imageUrl ? (
-                      <div className="relative w-full h-40 mb-2">
-                        <img 
-                          src={imageUrl} 
-                          alt="Vehicle" 
-                          className="h-40 w-full object-cover rounded-md" 
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setImageUrl('');
-                            setNewCar({ ...newCar, imageUrl: '' });
-                          }}
-                          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="w-full flex flex-col items-center px-4 py-6 bg-white text-indigo-500 rounded-md shadow-sm border border-gray-300 border-dashed cursor-pointer hover:bg-gray-50">
-                        <Upload size={24} />
-                        <span className="mt-2 text-sm text-gray-600">Click to upload image</span>
-                        <input 
-                          type="file" 
-                          className="hidden" 
-                          onChange={handleImageUpload}
-                          accept="image/*"
-                        />
-                        {uploadLoading && <span className="mt-2 text-xs text-gray-500">Uploading...</span>}
-                      </label>
-                    )}
-                  </div>
-                </div>
+                <input
+                  type="number"
+                  name="seats"
+                  value={newCar.seats}
+                  onChange={(e) => setNewCar({ ...newCar, seats: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  min="1"
+                  max="100"
+                />
               </div>
             </div>
             
@@ -189,7 +194,6 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
                   value={departureDate}
                   onChange={(e) => setDepartureDate(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  required
                 />
               </div>
               
@@ -206,39 +210,98 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
                   onChange={(e) => setNewCar({ ...newCar, arrivalTime: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="e.g. 5:30 PM"
-                  required
                 />
               </div>
               
-              {/* Dynamically Generated Fields */}
-              {Object.keys(newCar).map((key) => {
-                if (
-                  ![
-                    "name",
-                    "driverId",
-                    "plate", 
-                    "arrivalTime",
-                    "imageUrl"
-                  ].includes(key)
-                ) {
-                  return (
-                    <div key={key}>
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </label>
-                      <input
-                        type="text"
-                        name={key}
-                        value={newCar[key]}
-                        onChange={(e) => setNewCar({ ...newCar, [key]: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        required
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })}
+              {/* Route */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <MapPin size={18} />
+                  Route
+                </label>
+                <input
+                  type="text"
+                  name="route"
+                  value={newCar.route}
+                  onChange={(e) => setNewCar({ ...newCar, route: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="e.g. City Center - Airport"
+                />
+              </div>
+              
+              {/* Fuel Level */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Droplet size={18} />
+                  Fuel Level
+                </label>
+                <input
+                  type="text"
+                  name="fuelLevel"
+                  value={newCar.fuelLevel}
+                  onChange={(e) => setNewCar({ ...newCar, fuelLevel: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="e.g. 75%"
+                />
+              </div>
+              
+              {/* Last Service Date */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Wrench size={18} />
+                  Last Service Date
+                </label>
+                <input
+                  type="date"
+                  name="lastService"
+                  value={newCar.lastService}
+                  onChange={(e) => setNewCar({ ...newCar, lastService: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Image Upload Section - Bottom Section */}
+          <div className="mt-6 border-t pt-6">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <Upload size={18} />
+              Vehicle Image
+            </label>
+            <div className="flex items-center">
+              <div className="w-full flex flex-col items-center">
+                {imageUrl ? (
+                  <div className="relative w-full h-40 mb-2">
+                    <img 
+                      src={imageUrl} 
+                      alt="Vehicle" 
+                      className="h-40 w-full object-cover rounded-md" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageUrl('');
+                        setNewCar({ ...newCar, imageUrl: '' });
+                      }}
+                      className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-full flex flex-col items-center px-4 py-6 bg-white text-indigo-500 rounded-md shadow-sm border border-gray-300 border-dashed cursor-pointer hover:bg-gray-50">
+                    <Upload size={24} />
+                    <span className="mt-2 text-sm text-gray-600">Click to upload image</span>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                    />
+                    {uploadLoading && <span className="mt-2 text-xs text-gray-500">Uploading...</span>}
+                  </label>
+                )}
+              </div>
             </div>
           </div>
           
