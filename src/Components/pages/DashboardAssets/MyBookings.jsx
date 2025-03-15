@@ -1,107 +1,859 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Toaster } from "react-hot-toast";
 import { Card, CardContent } from "../../ui/Card";
-import { FaEdit, FaStar } from "react-icons/fa";
-import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
+import {
+  FaEdit,
+  FaStar,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaDollarSign,
+  FaCheckCircle,
+  FaHourglass,
+  FaPlus,
+  FaCarSide,
+  FaHistory,
+  FaSearch,
+  FaCar,
+  FaInfoCircle,
+  FaRegTimesCircle,
+  FaArrowRight,
+  FaFileAlt,
+  FaBookmark,
+  FaTimes,
+  FaCheck,
+  FaClock,
+  FaUserAlt,
+} from "react-icons/fa";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db, auth } from "../../../firebase";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import BookRide from "./BookRide";
+import { ArrowLeft, Plus } from "lucide-react";
 
 const MyBookings = () => {
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [pastTrips, setPastTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState("upcoming");
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const navigate = useNavigate();
+  const [showBookARide, setShowBookARide] = useState(false);
+
+  // Helper functions to fix the undefined errors
+  const calculateDaysRemaining = (date) => {
+    if (!date) return 0;
+
+    const today = new Date();
+    const tripDate =
+      typeof date === "string"
+        ? new Date(date)
+        : date.toDate
+        ? date.toDate()
+        : new Date(date);
+
+    const diffTime = Math.abs(tripDate - today);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const calculateTotalSpent = () => {
+    const upcomingTotal = upcomingTrips.reduce(
+      (sum, trip) => sum + (trip.amount || 0),
+      0
+    );
+    const pastTotal = pastTrips.reduce(
+      (sum, trip) => sum + (trip.fare || 0),
+      0
+    );
+    return (upcomingTotal + pastTotal).toFixed(2);
+  };
+
+  const getReviewLabel = (rating) => {
+    if (rating === 5) return "Excellent";
+    if (rating === 4) return "Very Good";
+    if (rating === 3) return "Good";
+    if (rating === 2) return "Fair";
+    if (rating === 1) return "Poor";
+    return "";
+  };
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) return;
-
-        const tripsQuery = query(collection(db, "bookings"), where("userId", "==", user.uid));
-        const tripDocs = await getDocs(tripsQuery);
-        const trips = tripDocs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        setUpcomingTrips(trips.filter(trip => trip.status === "upcoming"));
-        setPastTrips(trips.filter(trip => trip.status === "completed"));
-      } catch (error) {
-        console.error("Error fetching bookings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBookings();
   }, []);
 
-  const cancelBooking = async (tripId) => {
+  const fetchVehicleDetails = async (fleetId) => {
     try {
-      await deleteDoc(doc(db, "bookings", tripId));
-      setUpcomingTrips(prevTrips => prevTrips.filter(trip => trip.id !== tripId));
+      if (!fleetId) {
+        console.warn("Fleet ID is missing or undefined.");
+        return null;
+      }
+
+      console.log("Fetching vehicle details for fleetId:", fleetId);
+
+      const vehicleRef = doc(db, "fleet", fleetId);
+      const vehicleDoc = await getDoc(vehicleRef);
+
+      if (!vehicleDoc.exists()) {
+        console.warn("No vehicle found for fleetId:", fleetId);
+        return null;
+      }
+
+      return vehicleDoc.data();
     } catch (error) {
-      console.error("Error canceling trip:", error);
+      console.error("Error fetching vehicle details:", error);
+      return null;
     }
   };
 
-  if (loading) return <p>Loading bookings...</p>;
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const user = auth.currentUser;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      console.log("Fetching bookings for user:", user.uid);
+
+      const tripsQuery = query(
+        collection(db, "bookings"),
+        where("userId", "==", user.uid)
+      );
+
+      const tripDocs = await getDocs(tripsQuery);
+      const trips = await Promise.all(
+        tripDocs.docs.map(async (doc) => {
+          const tripData = { id: doc.id, ...doc.data() };
+
+          console.log("Trip Data:", tripData);
+
+          // Ensure fleetId exists before fetching vehicle details
+          const vehicleDetails = tripData.fleetId
+            ? await fetchVehicleDetails(tripData.fleetId)
+            : null;
+
+          return { ...tripData, vehicle: vehicleDetails };
+        })
+      );
+
+      console.log("Final trips data with vehicles:", trips);
+
+      // Separate upcoming and past trips based on departureDate
+      const now = new Date();
+      const upcoming = trips.filter((trip) => {
+        const departureDate = trip.departureDate
+          ? typeof trip.departureDate === "string"
+            ? new Date(trip.departureDate)
+            : trip.departureDate.toDate()
+          : null;
+
+        return (
+          departureDate &&
+          departureDate > now &&
+          (trip.status === "pending" || trip.status === "confirmed")
+        );
+      });
+
+      const past = trips.filter((trip) => {
+        const departureDate = trip.departureDate
+          ? typeof trip.departureDate === "string"
+            ? new Date(trip.departureDate)
+            : trip.departureDate.toDate()
+          : null;
+
+        return (
+          !departureDate ||
+          departureDate < now ||
+          trip.status === "completed" ||
+          trip.status === "cancelled"
+        );
+      });
+
+      setUpcomingTrips(upcoming);
+      setPastTrips(past);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      toast.error("Failed to load bookings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelBooking = async (tripId) => {
+    if (!window.confirm("Are you sure you want to cancel this trip?")) return;
+
+    try {
+      // Update the status to cancelled instead of deleting
+      await updateDoc(doc(db, "bookings", tripId), {
+        status: "cancelled",
+        updatedAt: new Date(),
+      });
+
+      // Move from upcoming to past trips
+      const cancelledTrip = upcomingTrips.find((trip) => trip.id === tripId);
+      if (cancelledTrip) {
+        setUpcomingTrips((prev) => prev.filter((trip) => trip.id !== tripId));
+        setPastTrips((prev) => [
+          ...prev,
+          { ...cancelledTrip, status: "cancelled" },
+        ]);
+      }
+
+      toast.success("Trip cancelled successfully");
+    } catch (error) {
+      console.error("Error canceling trip:", error);
+      toast.error("Failed to cancel trip");
+    }
+  };
+
+  const openRatingModal = (trip) => {
+    setSelectedTrip(trip);
+    setRating(trip.rating || 0);
+    setReview(trip.review || "");
+    setShowRatingModal(true);
+  };
+
+  const submitRating = async () => {
+    try {
+      await updateDoc(doc(db, "bookings", selectedTrip.id), {
+        rating,
+        review,
+        reviewed: true,
+        updatedAt: new Date(),
+      });
+
+      setPastTrips((prev) =>
+        prev.map((trip) =>
+          trip.id === selectedTrip.id
+            ? { ...trip, rating, review, reviewed: true }
+            : trip
+        )
+      );
+
+      setShowRatingModal(false);
+      toast.success("Thank you for your feedback!");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review");
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "Date not specified";
+
+    try {
+      const date =
+        typeof dateString === "string"
+          ? new Date(dateString)
+          : dateString.toDate
+          ? dateString.toDate()
+          : new Date();
+
+      const options = {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return date.toLocaleDateString(undefined, options);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return String(dateString);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "pending":
+        return (
+          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
+            <FaHourglass className="mr-1" /> Pending
+          </span>
+        );
+      case "confirmed":
+        return (
+          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+            <FaCheckCircle className="mr-1" /> Confirmed
+          </span>
+        );
+      case "cancelled":
+        return (
+          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full flex items-center">
+            Cancelled
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+            <FaCheckCircle className="mr-1" /> Completed
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+            {status}
+          </span>
+        );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <motion.div 
-      className="p-6 space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.h1 
-        className="text-3xl font-bold text-indigo-600"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        My Bookings
-      </motion.h1>
+    <>
+      {!showBookARide ? (
+        <>
+          <motion.div
+            className="p-2 md:p-6 space-y-4 "
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <motion.h1
+                className="text-2xl md:text-3xl font-bold text-indigo-700 mb-2 md:mb-0"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                My Bookings
+              </motion.h1>
 
-      {/* Upcoming Trips */}
-      <h2 className="text-2xl font-semibold text-blue-500">Upcoming Trips</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {upcomingTrips.length > 0 ? upcomingTrips.map(trip => (
-          <motion.div whileHover={{ scale: 1.05 }} key={trip.id}>
-            <Card className="p-6 shadow-xl space-y-4">
-              <CardContent>
-                <h3 className="text-xl font-semibold">{trip.carName}</h3>
-                <p className="text-gray-600">{trip.pickupLocation} → {trip.dropoffLocation}</p>
-                <p className="text-gray-500">{trip.date} at {trip.time}</p>
-                <button 
-                  onClick={() => cancelBooking(trip.id)}
-                  className="mt-2 text-red-500 flex items-center"
-                >
-                  <FaEdit className="mr-2" /> Cancel Trip
-                </button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )) : <p className="text-gray-500">No upcoming trips.</p>}
-      </div>
+              <button
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center self-start md:self-auto"
+                onClick={() => setShowBookARide(true)}
+              >
+                <FaPlus className="mr-2" /> Book New Trip
+              </button>
+            </div>
 
-      {/* Past Trips */}
-      <h2 className="text-2xl font-semibold text-green-500">Past Trips</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {pastTrips.length > 0 ? pastTrips.map(trip => (
-          <motion.div whileHover={{ scale: 1.05 }} key={trip.id}>
-            <Card className="p-6 shadow-xl space-y-4">
-              <CardContent>
-                <h3 className="text-xl font-semibold">{trip.carName}</h3>
-                <p className="text-gray-600">{trip.pickupLocation} → {trip.dropoffLocation}</p>
-                <p className="text-gray-500">Fare: ${trip.fare.toFixed(2)}</p>
-                <button 
-                  className="mt-2 text-yellow-500 flex items-center"
+            {/* Status Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-indigo-50 p-4 rounded-lg">
+                <p className="text-indigo-500 font-medium">Total Trips</p>
+                <p className="text-2xl font-bold">
+                  {upcomingTrips.length + pastTrips.length}
+                </p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-green-600 font-medium">Upcoming</p>
+                <p className="text-2xl font-bold">{upcomingTrips.length}</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-blue-600 font-medium">Completed</p>
+                <p className="text-2xl font-bold">{pastTrips.length}</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-purple-600 font-medium">Total Spent</p>
+                <p className="text-2xl font-bold">
+                  {calculateTotalSpent()} Rwf
+                </p>
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 ">
+              <button
+                className={`py-3 px-6 font-medium flex items-center ${
+                  selectedTab === "upcoming"
+                    ? "border-b-2 border-indigo-600 text-indigo-700"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setSelectedTab("upcoming")}
+              >
+                <FaCarSide className="mr-2" />
+                Upcoming Trips
+                <span className="ml-2 bg-indigo-100 text-indigo-700 py-1 px-2 rounded-full text-sm">
+                  {upcomingTrips.length}
+                </span>
+              </button>
+              <button
+                className={`py-3 px-6 font-medium flex items-center ${
+                  selectedTab === "past"
+                    ? "border-b-2 border-indigo-600 text-indigo-700"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setSelectedTab("past")}
+              >
+                <FaHistory className="mr-2" />
+                Past Trips
+                <span className="ml-2 bg-gray-100 text-gray-700 py-1 px-2 rounded-full text-sm">
+                  {pastTrips.length}
+                </span>
+              </button>
+            </div>
+
+            {/* Trip Display */}
+            {selectedTab === "upcoming" && (
+              <>
+                {upcomingTrips.length > 0 ? (
+                  <>
+                    {/* Sort and filter options */}
+                    <div className="flex flex-col md:flex-row justify-between mb-4 overflow-y-auto">
+                      <div className="mb-2 md:mb-0">
+                        <select className="p-2 border border-gray-300 rounded-md text-gray-700">
+                          <option>Sort by: Nearest Date</option>
+                          <option>Sort by: Farthest Date</option>
+                          <option>Sort by: Price (High to Low)</option>
+                          <option>Sort by: Price (Low to High)</option>
+                        </select>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search trips..."
+                          className="p-2 pl-8 border border-gray-300 rounded-md w-full"
+                        />
+                        <FaSearch className="absolute left-2 top-3 text-gray-400" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {upcomingTrips.map((trip) => (
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          key={trip.id}
+                          className="transition-all duration-200"
+                        >
+                          <Card className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-200 border border-gray-100">
+                            <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                  <FaCar className="text-2xl mr-3" />
+                                  <div>
+                                    <h3 className="font-bold text-lg">
+                                      {trip.vehicle.name || "Booked Vehicle"}
+                                    </h3>
+                                    <p className="text-indigo-100 text-sm">
+                                      {trip.vehicle.type || "Standard"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="bg-white text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                                  Upcoming
+                                </div>
+                              </div>
+                            </div>
+
+                            <CardContent className="p-5">
+                              <div className="flex items-start mb-4">
+                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
+                                  <FaCalendarAlt className="text-indigo-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Departure Date
+                                  </p>
+                                  <p className="font-medium">
+                                    {formatDate(trip.departureDate)}
+                                  </p>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    {calculateDaysRemaining(trip.departureDate)}{" "}
+                                    days remaining
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
+                                  <FaMapMarkerAlt className="text-indigo-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Route</p>
+                                  <p className="font-medium">
+                                    {trip.route || "Route not specified"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
+                                  <FaDollarSign className="text-indigo-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Payment
+                                  </p>
+                                  <p className="font-medium">
+                                    {trip.amount?.toFixed(2) || "0.00"} Rwf
+                                  </p>
+                                  <p className="text-xs text-green-600">
+                                    {trip.paymentStatus || "Paid"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between">
+                                <button className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors flex items-center">
+                                  <FaInfoCircle className="mr-2" /> Details
+                                </button>
+                                <button
+                                  onClick={() => cancelBooking(trip.id)}
+                                  className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors flex items-center"
+                                >
+                                  <FaRegTimesCircle className="mr-2" /> Cancel
+                                </button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-gray-50 rounded-lg p-8 text-center"
+                  >
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-indigo-100 p-4 rounded-full">
+                        <FaCalendarAlt className="text-indigo-500 text-3xl" />
+                      </div>
+                    </div>
+                    <h3 className="text-gray-700 text-xl font-medium">
+                      No upcoming trips
+                    </h3>
+                    <p className="text-gray-500 mt-2 mb-6">
+                      Ready to plan your next journey?
+                    </p>
+                    <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                      Book Your First Trip
+                    </button>
+                  </motion.div>
+                )}
+              </>
+            )}
+
+            {selectedTab === "past" && (
+              <>
+                {pastTrips.length > 0 ? (
+                  <>
+                    {/* Sort and filter options */}
+                    <div className="flex flex-col md:flex-row justify-between mb-4">
+                      <div className="mb-2 md:mb-0">
+                        <select className="p-2 border border-gray-300 rounded-md text-gray-700">
+                          <option>Sort by: Most Recent</option>
+                          <option>Sort by: Oldest First</option>
+                          <option>Sort by: Highest Rated</option>
+                        </select>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search past trips..."
+                          className="p-2 pl-8 border border-gray-300 rounded-md w-full"
+                        />
+                        <FaSearch className="absolute left-2 top-3 text-gray-400" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {pastTrips.map((trip) => (
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          key={trip.id}
+                          className="transition-all duration-200"
+                        >
+                          <Card className="overflow-hidden shadow-md hover:shadow-xl border border-gray-100">
+                            <div className="bg-gradient-to-r from-green-600 to-green-700 p-4 text-white">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                  <FaCar className="text-2xl mr-3" />
+                                  <div>
+                                    <h3 className="font-bold text-lg">
+                                      {trip.carName || "Completed Trip"}
+                                    </h3>
+                                    <p className="text-green-100 text-sm">
+                                      {trip.vehicleType || "Standard"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="bg-white text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                                  Completed
+                                </div>
+                              </div>
+                            </div>
+
+                            <CardContent className="p-5">
+                              <div className="flex items-start mb-4">
+                                <div className="bg-green-50 p-2 rounded-md mr-3">
+                                  <FaCalendarAlt className="text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Trip Date
+                                  </p>
+                                  <p className="font-medium">
+                                    {formatDate(trip.date)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-green-50 p-2 rounded-md mr-3">
+                                  <FaMapMarkerAlt className="text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">Route</p>
+                                  <p className="font-medium">
+                                    <span className="inline-block bg-gray-100 px-2 py-1 rounded text-sm mr-1">
+                                      {trip.pickupLocation ||
+                                        "Pickup not specified"}
+                                    </span>
+                                    <FaArrowRight className="inline text-gray-400 mx-1" />
+                                    <span className="inline-block bg-gray-100 px-2 py-1 rounded text-sm">
+                                      {trip.dropoffLocation ||
+                                        "Dropoff not specified"}
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-green-50 p-2 rounded-md mr-3">
+                                  <FaDollarSign className="text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Payment
+                                  </p>
+                                  <p className="font-medium">
+                                    ${trip.fare?.toFixed(2) || "0.00"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-green-50 p-2 rounded-md mr-3">
+                                  <FaClock className="text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Duration
+                                  </p>
+                                  <p className="font-medium">
+                                    {trip.duration || "0 minutes"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-4">
+                                <div className="bg-green-50 p-2 rounded-md mr-3">
+                                  <FaUserAlt className="text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Passengers
+                                  </p>
+                                  <p className="font-medium">
+                                    {trip.passengers || "0"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {trip.reviewed ? (
+                                <div className="mt-3 bg-yellow-50 p-3 rounded-md">
+                                  <p className="text-sm text-gray-500 mb-1">
+                                    Your Rating
+                                  </p>
+                                  <div className="flex items-center mb-1">
+                                    {[...Array(5)].map((_, i) => (
+                                      <FaStar
+                                        key={i}
+                                        className={
+                                          i < trip.rating
+                                            ? "text-yellow-500"
+                                            : "text-gray-300"
+                                        }
+                                      />
+                                    ))}
+                                    <span className="ml-2 text-sm text-gray-500">
+                                      {getReviewLabel(trip.rating)}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => openRatingModal(trip)}
+                                    className="px-4 py-2 bg-yellow-50 text-yellow-600 rounded-md hover:bg-yellow-100 transition-colors flex items-center"
+                                  >
+                                    <FaStar className="mr-2" /> Rate & Review
+                                  </button>
+                                </div>
+                              ) : null}
+
+                              <div
+                                className={`border-t border-gray-100 pt-4 mt-4 flex justify-between ${
+                                  !trip.reviewed ? "mt-2" : ""
+                                }`}
+                              >
+                                <button className="px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex items-center">
+                                  <FaFileAlt className="mr-2" /> Receipt
+                                </button>
+                                <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors flex items-center">
+                                  <FaBookmark className="mr-2" /> Save Route
+                                </button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-gray-50 rounded-lg p-8 text-center"
+                  >
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-green-100 p-4 rounded-full">
+                        <FaHistory className="text-green-500 text-3xl" />
+                      </div>
+                    </div>
+                    <h3 className="text-gray-700 text-xl font-medium">
+                      No past trips found
+                    </h3>
+                    <p className="text-gray-500 mt-2 mb-6">
+                      Your completed trips will appear here
+                    </p>
+                    <button className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                      Book a Trip Now
+                    </button>
+                  </motion.div>
+                )}
+              </>
+            )}
+
+            {/* Rating Modal */}
+            {showRatingModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl"
                 >
-                  <FaStar className="mr-2" /> Rate & Review
-                </button>
-              </CardContent>
-            </Card>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-semibold">
+                      Rate Your Experience
+                    </h3>
+                    <button
+                      onClick={() => setShowRatingModal(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-md mb-4">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 p-2 rounded-full mr-3">
+                        <FaCar className="text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{selectedTrip?.carName}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatDate(selectedTrip?.date)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 mb-2 font-medium">
+                    How would you rate your trip?
+                  </p>
+                  <div className="flex items-center justify-center mb-4 bg-gray-50 p-3 rounded-md">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar
+                        key={i}
+                        className={`text-3xl cursor-pointer mx-1 transition-all duration-200 ${
+                          i < rating ? "text-yellow-500" : "text-gray-300"
+                        } ${i < rating ? "scale-110" : ""}`}
+                        onClick={() => setRating(i + 1)}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-center text-sm mb-4">
+                    {rating === 5
+                      ? "Excellent"
+                      : rating === 4
+                      ? "Very Good"
+                      : rating === 3
+                      ? "Good"
+                      : rating === 2
+                      ? "Fair"
+                      : rating === 1
+                      ? "Poor"
+                      : "Select a rating"}
+                  </p>
+
+                  <p className="text-gray-600 mb-2 font-medium">
+                    Share your experience (optional)
+                  </p>
+                  <textarea
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    placeholder="What did you like or dislike about your trip?"
+                    className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 outline-none"
+                    rows={3}
+                  />
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => setShowRatingModal(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitRating}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center"
+                      disabled={rating === 0}
+                    >
+                      <FaCheck className="mr-2" /> Submit Rating
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+
+            <Toaster />
           </motion.div>
-        )) : <p className="text-gray-500">No past trips.</p>}
-      </div>
-    </motion.div>
+        </>
+      ) : (
+        <>
+          <button
+            onClick={() => setShowBookARide(false)}
+            className="px-4 py-2 flex items-center bg-gray-500 text-white rounded-md hover:bg-gray-600 transition mb-4"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" /> Back to Bookings
+          </button>
+          <BookRide /> {/* Show Book a Ride component */}
+        </>
+      )}
+    </>
   );
 };
 

@@ -1,16 +1,16 @@
-import { 
-  collection, 
+import {
+  collection,
   deleteDoc,
   doc,
-  getDoc, 
-  updateDoc, 
-  arrayUnion, 
+  getDoc,
+  updateDoc,
+  arrayUnion,
   arrayRemove,
   query,
   where,
   getDocs,
   setDoc,
-  increment
+  increment,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -19,7 +19,7 @@ export const getFleetById = async (fleetId) => {
   try {
     const fleetRef = doc(db, "fleet", fleetId);
     const fleetSnap = await getDoc(fleetRef);
-    
+
     if (fleetSnap.exists()) {
       return { id: fleetSnap.id, ...fleetSnap.data() };
     } else {
@@ -37,12 +37,12 @@ export const getFleetByRoute = async (route) => {
     const fleetRef = collection(db, "fleet");
     const q = query(fleetRef, where("route", "==", route));
     const querySnapshot = await getDocs(q);
-    
+
     const fleets = [];
     querySnapshot.forEach((doc) => {
       fleets.push({ id: doc.id, ...doc.data() });
     });
-    
+
     return fleets;
   } catch (error) {
     console.error("Error getting fleet by route: ", error);
@@ -55,11 +55,11 @@ export const addSeatLayout = async (fleetId, totalSeats = 16) => {
   try {
     const fleetRef = doc(db, "fleet", fleetId);
     const fleetSnap = await getDoc(fleetRef);
-    
+
     if (!fleetSnap.exists()) {
       throw new Error("Vehicle not found");
     }
-    
+
     // Create seat layout object
     const layout = {};
     for (let i = 1; i <= totalSeats; i++) {
@@ -67,20 +67,23 @@ export const addSeatLayout = async (fleetId, totalSeats = 16) => {
       const seatNumber = i.toString();
       layout[seatNumber] = {
         status: "available",
-        bookedBy: null
+        bookedBy: null,
       };
     }
-    
+
     // Update the fleet document
     await updateDoc(fleetRef, {
-      "seats": {
+      seats: {
         total: totalSeats,
         available: totalSeats,
-        layout: layout
-      }
+        layout: layout,
+      },
     });
-    
-    return { success: true, message: `Seat layout with ${totalSeats} seats added to vehicle` };
+
+    return {
+      success: true,
+      message: `Seat layout with ${totalSeats} seats added to vehicle`,
+    };
   } catch (error) {
     console.error("Error adding seat layout: ", error);
     throw error;
@@ -88,7 +91,12 @@ export const addSeatLayout = async (fleetId, totalSeats = 16) => {
 };
 
 // Update seat status (when booking is made or cancelled)
-export const updateSeatStatus = async (fleetId, seatNumber, status, userId = null) => {
+export const updateSeatStatus = async (
+  fleetId,
+  seatNumber,
+  status,
+  userId = null
+) => {
   if (!["booked", "available"].includes(status)) {
     throw new Error("Invalid seat status. Must be 'booked' or 'available'.");
   }
@@ -142,26 +150,36 @@ export const ensureSeatLayout = async (fleetId, totalSeats = 16) => {
   }
 };
 
-
 // Get available seats for a vehicle
 export const getAvailableSeats = async (fleetId) => {
   try {
     const fleet = await getFleetById(fleetId);
 
     if (!fleet || !fleet.seats) {
+      console.error("Fleet data is invalid:", fleet); // Log the fleet data for debugging
       throw new Error("Fleet data not found or is invalid.");
     }
 
     // If seat layout doesn't exist, create a default layout
     if (!fleet.seats.layout) {
-      console.warn(`No seat layout found for fleet ID ${fleetId}. Creating a default layout...`);
-      
+      console.warn(
+        `No seat layout found for fleet ID ${fleetId}. Creating a default layout...`
+      );
+
       await addSeatLayout(fleetId, 16); // Creates a default layout with 16 seats
-      const updatedFleet = await getFleetById(fleetId);
+      const updatedFleet = await getFleetById(fleetId); // Retry fetching fleet data
+
       if (!updatedFleet.seats?.layout) {
+        console.error(
+          `Failed to create a seat layout for fleet ID ${fleetId}.`
+        );
         throw new Error("Failed to create a seat layout for this vehicle.");
       }
 
+      // Log the updated layout
+      console.log("Updated seat layout:", updatedFleet.seats.layout);
+
+      // Return available seats after creating the default layout
       return getAvailableSeats(fleetId); // Retry fetching after layout creation
     }
 
@@ -171,15 +189,14 @@ export const getAvailableSeats = async (fleetId) => {
       .map(([seatNumber, _]) => seatNumber);
 
     console.log("Available seats:", availableSeats); // Debugging log to check available seats
-    return availableSeats.length > 0 ? availableSeats : [];
 
+    // Return available seats, or an empty array if none are available
+    return availableSeats.length > 0 ? availableSeats : [];
   } catch (error) {
     console.error("Error getting available seats:", error.message);
-    throw error;
+    throw error; // Rethrow the error to propagate it further
   }
 };
-
-
 
 // Get all fleet vehicles
 export const getAllVehicles = async () => {
@@ -187,9 +204,9 @@ export const getAllVehicles = async () => {
     const fleetRef = collection(db, "fleet");
     const querySnapshot = await getDocs(fleetRef);
 
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,  // ✅ Ensure Firestore's auto-generated ID is included
-      ...doc.data()
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id, // ✅ Ensure Firestore's auto-generated ID is included
+      ...doc.data(),
     }));
   } catch (error) {
     console.error("Error getting all vehicles:", error);
@@ -241,4 +258,3 @@ export const getAvailableRoutes = async () => {
     return []; // Return an empty array on error
   }
 };
-
