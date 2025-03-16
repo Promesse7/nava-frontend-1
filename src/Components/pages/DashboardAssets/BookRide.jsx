@@ -104,7 +104,7 @@ const BookRide = () => {
               onClick={() => setSelectedCar(car)}
             >
               <Card className="p-6 shadow-xl space-y-4 cursor-pointer">
-                <img src={car.image} alt={car.name} className="w-full h-30 object-cover rounded" />
+                <img src={car.imageUrl} alt={car.name} className="w-full h-30 object-cover rounded" />
                 <CardContent>
                   <h2 className="text-xl font-semibold">{car.name}</h2>
                   <p className="text-gray-600">{car.type} - ${car.price}/day</p>

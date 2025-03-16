@@ -6,7 +6,7 @@ const BookingManagement = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [updatingTicketId, setUpdatingTicketId] = useState(null); // Track which ticket is being updated
-
+ 
   // Fetch all bookings on component mount
   useEffect(() => {
     const fetchTickets = async () => {
@@ -114,10 +114,10 @@ const BookingManagement = () => {
                   </td>
                   <td className="py-3 px-4 text-sm">
                     <div className="flex space-x-2">
-                      {ticket.status === 'PENDING_APPROVAL' && (
+                      {ticket.status === 'pending' && (
                         <>
                           <button
-                            onClick={() => handleStatusUpdate(ticket.id, 'APPROVED')}
+                            onClick={() => handleStatusUpdate(ticket.id, 'approved')}
                             disabled={updatingTicketId === ticket.id}
                             className={`px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors ${
                               updatingTicketId === ticket.id
@@ -133,7 +133,7 @@ const BookingManagement = () => {
                             )}
                           </button>
                           <button
-                            onClick={() => handleStatusUpdate(ticket.id, 'CANCELLED')}
+                            onClick={() => handleStatusUpdate(ticket.id, 'canceled')}
                             disabled={updatingTicketId === ticket.id}
                             className={`px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors ${
                               updatingTicketId === ticket.id
@@ -150,8 +150,8 @@ const BookingManagement = () => {
                           </button>
                         </>
                       )}
-                      {ticket.status !== 'PENDING_APPROVAL' && (
-                        <span className="text-gray-500">No actions available</span>
+                      {ticket.status == 'approved' && (
+                        <span className="text-gray-500">Ticket Approved!</span>
                       )}
                     </div>
                   </td>

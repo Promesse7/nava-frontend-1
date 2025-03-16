@@ -398,7 +398,7 @@ const FleetManagement = () => {
       </div>
 
       {/* Content based on active tab */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 overflow-auto">
         {/* Available Cars */}
         {activeTab === "available" && (
           <div>

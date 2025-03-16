@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import FleetManagement from "../search/FleetManagement";
 import DashboardHome from "./DashboardAssets/DashboardHome";
 import Welcome from "./DashboardAssets/Welcome";
-import Settings from "./DashboardAssets/Settings";
+import BookingManagement from "../admin/BookingManagement";
 import Payment from "./DashboardAssets/PaymentDashboard";
 import CustomerManagement from "./DashboardAssets/CustomerDashboard";
 import DriverManagement from "./DashboardAssets/DriverManagament";
@@ -139,15 +139,6 @@ const Dashboard = () => {
     fetchDashboardData(); // Trigger the function to load the data
   };
 
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      console.log("User logged out");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
 
   const adminTabs = [
     {
@@ -163,6 +154,11 @@ const Dashboard = () => {
     {
       id: "payment",
       label: "Payment & Transactions",
+      icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4",
+    },
+    {
+      id: "bookedCar",
+      label: "Bookings Management",
       icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4",
     },
     {
@@ -227,14 +223,15 @@ const Dashboard = () => {
           return <FleetManagement />;
         case "driver":
           return <DriverManagement />;
+        case "bookedCar":
+          return <BookingManagement />;
         case "payment":
           return <Payment />;
         case "customer":
           return <CustomerManagement />;
         case "report":
           return <ReportsLogsDashboard />;
-        case "settings":
-          return <Settings />;
+        
         default:
           return <Welcome />;
       }
@@ -271,19 +268,9 @@ const Dashboard = () => {
         <div className="bg-gradient-to-r from-gray-300 to-gray-200 p-4">
           <div className="flex flex-col items-center">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white">
-                <svg
-                  className="w-10 h-10 text-gray-500"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
+              <img src={userData.avatar} alt=""
+                className="w-16 h-16 rounded-full border-2 border-white"
+              />
               <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 rounded-full border-2 border-white"></div>
             </div>
             <div className="mt-2 text-center">
@@ -466,32 +453,7 @@ const Dashboard = () => {
               </div>
             ))}
 
-          {/*Common menu  items*/}
-
-          <div className="px-4 py-3 flex items-center space-x-3 text-gray-500">
-            <div className="w-6 h-6 rounded-md flex items-center justify-center">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </div>
-            <span>Settings</span>
-          </div>
+         
         </nav>
       </div>
 

@@ -105,6 +105,11 @@ export const getBookingById = async (bookingId) => {
   }
 };
 
+export const getAllBookings = async () => {
+  const bookingsRef = collection(db, "bookings");
+  const snapshot = await getDocs(bookingsRef);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
 // Update booking status
 export const updateBookingStatus = async (bookingId, status) => {
   try {

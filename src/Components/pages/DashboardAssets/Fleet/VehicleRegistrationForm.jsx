@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, Upload, Car, Calendar, Clock, User, CreditCard } from 'lucide-react';
-
+import { X, Upload, Car, Calendar, Clock, User, CreditCard,Wrench,MapPin,Droplet } from 'lucide-react';
+import { db } from "../../../../firebase"; // Make sure storage is imported
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmitForm }) => {
   const [newCar, setNewCar] = useState({
     name: '',
@@ -28,12 +34,12 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
     // Create a FormData object to prepare for Cloudinary upload
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'vehicle_images'); // Replace with your Cloudinary upload preset
+    formData.append('upload_preset', 'nava-travel'); // Replace with your Cloudinary upload preset
     
     try {
       // Upload to Cloudinary
       const response = await fetch(
-        'https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', // Replace YOUR_CLOUD_NAME
+        'https://api.cloudinary.com/v1_1/dlhu0vkqm/image/upload', // Replace YOUR_CLOUD_NAME
         {
           method: 'POST',
           body: formData,
@@ -51,24 +57,77 @@ const VehicleRegistrationForm = ({ setShowPopup, drivers, handleSubmit: onSubmit
   };
   
   // Modified to match the parent component's expected behavior
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Ensure all required fields are filled
-    if (!newCar.name || !newCar.plate || !newCar.type) {
-      alert("Please fill in all required fields: Name, Type, and Plate.");
-      return;
+  
+    try {
+      // Ensure all required fields are filled
+      if (!newCar.name || !newCar.plate || !newCar.type) {
+        alert("Please fill in all required fields: Name, Type, and Plate.");
+        return;
+      }
+  
+      // Ensure seats is a valid number
+      const totalSeats = Number.isInteger(parseInt(newCar.seats))
+        ? parseInt(newCar.seats)
+        : 16;
+  
+      // Create the seat layout object
+      const layout = {};
+      for (let i = 1; i <= totalSeats; i++) {
+        layout[i.toString()] = {
+          status: "available",
+          bookedBy: null,
+        };
+      }
+  
+      // Combine all form data, including seat structure and departureDate
+      const formData = {
+        ...newCar,
+        departureDate,
+        seats: {
+          total: totalSeats,
+          available: totalSeats,
+          layout,
+        },
+      };
+  
+      // Pass data to parent component's handler (if applicable)
+      if (onSubmitForm) {
+        onSubmitForm(formData);
+      }
+  
+      // Add car to Firestore and store the document ID
+      const vehicleRef = await addDoc(collection(db, "fleet"), formData);
+      const vehicleId = vehicleRef.id;
+  
+      // Update Firestore to include the auto-generated ID in the document
+      await updateDoc(doc(db, "fleet", vehicleId), { id: vehicleId });
+  
+      // Reset form and close popup
+      setShowPopup(false);
+      setNewCar({
+        type: "",
+        name: "",
+        driver: "",
+        plate: "",
+        seats: "",
+        status: "available",
+        fuelLevel: "",
+        location: "",
+        lastService: "",
+        departureTime: "",
+        arrivalTime: "",
+        route: "",
+      });
+  
+      alert("New car added successfully with seat layout!");
+    } catch (error) {
+      console.error("Error adding new car:", error);
+      alert("Error adding car: " + error.message);
     }
-    
-    // Combine all form data
-    const formData = {
-      ...newCar,
-      departureDate,
-    };
-    
-    // Pass data to parent component's handler
-    onSubmitForm(formData);
   };
+  
   
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-70 z-50">

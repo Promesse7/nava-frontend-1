@@ -24,6 +24,7 @@ import {
   FaCheck,
   FaClock,
   FaUserAlt,
+  FaClipboardCheck
 } from "react-icons/fa";
 import {
   collection,
@@ -165,7 +166,7 @@ const MyBookings = () => {
         return (
           departureDate &&
           departureDate > now &&
-          (trip.status === "pending" || trip.status === "confirmed")
+          (trip.status === "pending" || trip.status === "approved")
         );
       });
 
@@ -489,6 +490,36 @@ const MyBookings = () => {
                                 </div>
                               </div>
 
+                              {/* Booking Status Section */}
+                              <div className="flex items-start mb-4">
+                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
+                                  <FaClipboardCheck
+                                    className={`text-${
+                                      trip.status === "approved"
+                                        ? "green"
+                                        : trip.status === "pending"
+                                        ? "yellow"
+                                        : "red"
+                                    }-600`}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Booking Status
+                                  </p>
+                                  <p
+                                    className={`font-medium text-${
+                                      trip.status === "approved"
+                                        ? "green"
+                                        : trip.status === "pending"
+                                        ? "yellow"
+                                        : "red"
+                                    }-600`}
+                                  >
+                                    {trip.status || "Pending"}
+                                  </p>
+                                </div>
+                              </div>
                               <div className="flex items-start mb-4">
                                 <div className="bg-indigo-50 p-2 rounded-md mr-3">
                                   <FaDollarSign className="text-indigo-600" />
@@ -500,9 +531,9 @@ const MyBookings = () => {
                                   <p className="font-medium">
                                     {trip.amount?.toFixed(2) || "0.00"} Rwf
                                   </p>
-                                  <p className="text-xs text-green-600">
-                                    {trip.paymentStatus || "Paid"}
-                                  </p>
+                                    <p className="text-xs text-green-600 ">
+                                      {trip.paymentStatus || "Paid"}
+                                    </p>
                                 </div>
                               </div>
 
