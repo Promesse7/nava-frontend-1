@@ -155,60 +155,78 @@ const BookingForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Form submission started");
+  e.preventDefault();
+  console.log("Form submission started");
 
-    const errors = validateForm(formValues);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+  const errors = validateForm(formValues);
+  if (Object.keys(errors).length > 0) {
+    setFormErrors(errors);
+    return;
+  }
 
-    // Debugging: Log current form values
-    console.log("Form values:", {
+  // Debugging: Log current form values
+  console.log("Form values:", {
+    route,
+    departureDate,
+    selectedFleet,
+    customerName,
+    phoneNumber,
+    selectedSeat,
+  });
+
+  // Validate form fields
+  if (
+    !route ||
+    !departureDate ||
+    !selectedFleet ||
+    !selectedSeat ||
+    !validateForm()
+  ) {
+    console.log("Validation failed", formErrors);
+    return;
+  }
+
+  setSubmitting(true);
+  setBookingStatus("processing");
+  console.log("Set status to processing");
+
+  try {
+    // Call makeBooking() to create a booking ✅
+    const bookingData = {
+      userId,
       route,
       departureDate,
       selectedFleet,
+      selectedSeat,
       customerName,
       phoneNumber,
-      selectedSeat,
-    });
+      email,
+      amount,
+      status: "pending",
+    };
 
-    // Validate form fields
-    if (
-      !route ||
-      !departureDate ||
-      !selectedFleet ||
-      !selectedSeat ||
-      !validateForm()
-    ) {
-      console.log("Validation failed", formErrors);
-      return;
-    }
+    console.log("Submitting booking:", bookingData);
+    await makeBooking(bookingData);
 
-    setSubmitting(true);
-    setBookingStatus("processing");
-    console.log("Set status to processing");
+    // Update seat status in Firebase
+    await updateSeatStatus(selectedFleet, selectedSeat, "booked", userId);
 
-    try {
-      // Update seat status in Firebase
-      await updateSeatStatus(selectedFleet, selectedSeat, "booked", userId);
+    console.log("Setting success status");
+    setBookingStatus("success");
 
-      console.log("Setting success status");
-      setBookingStatus("success");
+    // Reset form after success
+    setTimeout(() => {
+      setSubmitting(false);
+      setBookingStatus(null);
+    }, 2000);
+  } catch (err) {
+    console.error("Error in submission:", err);
+    setBookingStatus("error");
 
-      // Reset form after success
-      setTimeout(() => {
-        setSubmitting(false);
-        setBookingStatus(null);
-      }, 2000);
-    } catch (err) {
-      console.error("Error in submission:", err);
-      setBookingStatus("error");
+    setTimeout(() => setBookingStatus(null), 3000);
+  }
+};
 
-      setTimeout(() => setBookingStatus(null), 3000);
-    }
-  };
 
   // Determine if form is in loading state
   const isLoading = loading || loadingFleets || loadingRoutes || submitting;
