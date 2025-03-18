@@ -21,7 +21,7 @@ const useBooking = () => {
     departureDate,
     seatNumber,
     amount,
-    customerInfo = null // Add parameter for customer info
+    customerInfo = null
   ) => {
     setLoading(true);
     setError(null);
@@ -44,14 +44,14 @@ const useBooking = () => {
         departureDate,
         seatNumber,
         amount,
-        customerInfo, // Add customer info to booking data
-        status: "PENDING_APPROVAL",
+        customerInfo,
+        status: "pending",  // Match the status in bookingService.js
         createdAt: new Date().toISOString()
       });
       
       console.log("Booking created successfully with ID:", bookingId);
   
-      // Only update seat status if a specific seat was selected
+      // Update seat status internally to avoid duplicate calls
       if (seatNumber) {
         console.log("Updating seat status:", seatNumber);
         await updateSeatStatus(fleetId, seatNumber, "booked", userId);

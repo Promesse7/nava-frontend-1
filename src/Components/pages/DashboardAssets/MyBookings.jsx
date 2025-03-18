@@ -37,6 +37,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db, auth } from "../../../firebase";
+import { onSnapshot } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import BookRide from "./BookRide";
@@ -93,7 +94,9 @@ const MyBookings = () => {
   };
 
   useEffect(() => {
-    fetchBookings();
+    const unsubscribe = fetchBookings(); // Subscribe to real-time updates
+  
+    return () => unsubscribe(); // Cleanup the listener when component unmounts
   }, []);
 
   const fetchVehicleDetails = async (fleetId) => {
@@ -120,80 +123,78 @@ const MyBookings = () => {
     }
   };
 
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const user = auth.currentUser;
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+const fetchBookings = () => {
+  setLoading(true);
+  const user = auth.currentUser;
+  if (!user) {
+    setLoading(false);
+    return () => {};
+  }
 
-      console.log("Fetching bookings for user:", user.uid);
+  console.log("Listening for real-time bookings for user:", user.uid);
 
-      const tripsQuery = query(
-        collection(db, "bookings"),
-        where("userId", "==", user.uid)
-      );
+  const tripsQuery = query(
+    collection(db, "bookings"),
+    where("userId", "==", user.uid)
+  );
 
-      const tripDocs = await getDocs(tripsQuery);
-      const trips = await Promise.all(
-        tripDocs.docs.map(async (doc) => {
-          const tripData = { id: doc.id, ...doc.data() };
+  const unsubscribe = onSnapshot(tripsQuery, async (snapshot) => {
+    const trips = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const tripData = { id: doc.id, ...doc.data() };
 
-          console.log("Trip Data:", tripData);
+        console.log("Trip Data:", tripData);
 
-          // Ensure fleetId exists before fetching vehicle details
-          const vehicleDetails = tripData.fleetId
-            ? await fetchVehicleDetails(tripData.fleetId)
-            : null;
-
-          return { ...tripData, vehicle: vehicleDetails };
-        })
-      );
-
-      console.log("Final trips data with vehicles:", trips);
-
-      // Separate upcoming and past trips based on departureDate
-      const now = new Date();
-      const upcoming = trips.filter((trip) => {
-        const departureDate = trip.departureDate
-          ? typeof trip.departureDate === "string"
-            ? new Date(trip.departureDate)
-            : trip.departureDate.toDate()
+        // Ensure fleetId exists before fetching vehicle details
+        const vehicleDetails = tripData.fleetId
+          ? await fetchVehicleDetails(tripData.fleetId)
           : null;
 
-        return (
-          departureDate &&
-          departureDate > now &&
-          (trip.status === "pending" || trip.status === "approved")
-        );
-      });
+        return { ...tripData, vehicle: vehicleDetails };
+      })
+    );
 
-      const past = trips.filter((trip) => {
-        const departureDate = trip.departureDate
-          ? typeof trip.departureDate === "string"
-            ? new Date(trip.departureDate)
-            : trip.departureDate.toDate()
-          : null;
+    console.log("Updated trips data with vehicles:", trips);
 
-        return (
-          !departureDate ||
-          departureDate < now ||
-          trip.status === "completed" ||
-          trip.status === "cancelled"
-        );
-      });
+    // Separate upcoming and past trips based on departureDate
+    const now = new Date();
+    const upcoming = trips.filter((trip) => {
+      const departureDate = trip.departureDate
+        ? typeof trip.departureDate === "string"
+          ? new Date(trip.departureDate)
+          : trip.departureDate.toDate()
+        : null;
 
-      setUpcomingTrips(upcoming);
-      setPastTrips(past);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-      toast.error("Failed to load bookings");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (
+        departureDate &&
+        departureDate > now &&
+        (trip.status === "pending" || trip.status === "approved")
+      );
+    });
+
+    const past = trips.filter((trip) => {
+      const departureDate = trip.departureDate
+        ? typeof trip.departureDate === "string"
+          ? new Date(trip.departureDate)
+          : trip.departureDate.toDate()
+        : null;
+
+      return (
+        !departureDate ||
+        departureDate < now ||
+        trip.status === "completed" ||
+        trip.status === "cancelled"
+      );
+    });
+
+    setUpcomingTrips(upcoming);
+    setPastTrips(past);
+    setLoading(false);
+  });
+
+  return unsubscribe; // Return the unsubscribe function to clean up the listener
+};
+
 
   const cancelBooking = async (tripId) => {
     if (!window.confirm("Are you sure you want to cancel this trip?")) return;

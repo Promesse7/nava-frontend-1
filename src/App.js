@@ -9,6 +9,7 @@ import Dashboard from './Components/pages/Dashboard';
 import BusSchedule from './Components/features/BusSchedule';
 import BusList from './Components/search/BusList';
 import FleetManagement from './Components/search/FleetManagement';
+import Payment from './Components/pages/DashboardAssets/PaymentDashboard';
 
 
 function App() {
@@ -35,6 +36,13 @@ function App() {
           />
            
         
+           <Route 
+            path="/pay" 
+            element={
+             
+                <Payment />
+            } 
+          />
            
         <Route 
             path="/bus-entry" 

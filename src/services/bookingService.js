@@ -30,6 +30,10 @@ export const createBooking = async (bookingData) => {
       paymentStatus: "pending",
       amount: bookingData.amount,
       bookingNumber,
+      // Add customer info
+      customerName: bookingData.customerInfo?.customerName || '',
+      phoneNumber: bookingData.customerInfo?.phoneNumber || '',
+      email: bookingData.customerInfo?.email || '',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };

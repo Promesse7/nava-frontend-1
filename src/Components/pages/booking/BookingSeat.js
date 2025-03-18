@@ -43,10 +43,10 @@ const SeatBooking = ({ fleetId, userId, onSeatSelect }) => {
     fetchSeats();
   }, [fleetId]);
 
-  const handleSeatChange = (e) => {
-    const seat = e.target.value;
-    setSelectedSeat(seat);
-    onSeatSelect(seat);  // Passing selected seat to parent
+  const handleSeatChange = (e, seatNumber) => {
+    e.preventDefault(); // Prevent form submission
+    setSelectedSeat(seatNumber);
+    onSeatSelect(seatNumber);  // Passing selected seat to parent
   };
 
   if (!fleetId) {
@@ -60,10 +60,16 @@ const SeatBooking = ({ fleetId, userId, onSeatSelect }) => {
       {Object.entries(seats).map(([seatNumber, seat]) => (
         <button
           key={seatNumber}
-          value={seatNumber}  // Set value to the seat number
-          onClick={handleSeatChange}  // Call handleSeatChange on seat selection
+          type="button" // Explicitly set type to button to prevent form submission
+          onClick={(e) => handleSeatChange(e, seatNumber)} // Pass the event and seat number
           disabled={seat.status === "booked"}
-          className={`p-4 border rounded ${seat.status === "booked" ? "bg-red-500" : "bg-green-500"}`}
+          className={`p-4 border rounded ${
+            seat.status === "booked" 
+              ? "bg-red-500 text-white" 
+              : selectedSeat === seatNumber
+                ? "bg-blue-500 text-white" // Highlight selected seat
+                : "bg-green-500 text-white"
+          }`}
         >
           {seatNumber}
         </button>
