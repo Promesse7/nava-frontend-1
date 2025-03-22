@@ -128,11 +128,11 @@ const SupportHelpCenter = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium text-gray-700">Email Support</h4>
-              <p className="text-gray-600">support@ourrideapp.com</p>
+              <p className="text-gray-600">travel-rda@gmail.com</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-700">Phone Support</h4>
-              <p className="text-gray-600">+1 (800) RIDE-HELP</p>
+              <p className="text-gray-600">+250 (798) 515489</p>
             </div>
           </div>
         </div>

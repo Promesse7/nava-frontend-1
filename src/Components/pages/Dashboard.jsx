@@ -261,7 +261,7 @@ const Dashboard = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="w-full h-screen bg-gray-100 flex overflow-hidden  ">
+    <div className="w-full h-screen bg-gray-100 flex overflow-hidden" id="step1">
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-md h-full overflow-y-auto  scrollbar-thin scrollbar-thumb-black scrollbar-track-white">
         {/* Profile Section */}
@@ -290,6 +290,8 @@ const Dashboard = () => {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
+
+              
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

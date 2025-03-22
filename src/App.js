@@ -1,64 +1,64 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './Components/features/ProtectedRoute';
-import { UserDashboard, AdminDashboard } from './Components/pages/DashboardOld';
 import AuthForm from './Components/auth/Authentication';
 import HomePage from './Components/pages/LandingPage';
 import { AuthProvider } from './Components/auth/AuthContext';
 import UserProfile from './Components/auth/ProfilePage';
 import Dashboard from './Components/pages/Dashboard';
-import BusSchedule from './Components/features/BusSchedule';
 import BusList from './Components/search/BusList';
 import FleetManagement from './Components/search/FleetManagement';
-import Payment from './Components/pages/DashboardAssets/PaymentDashboard';
-
+import TripTracker from './Components/pages/DashboardAssets/TripTracker';
+import TourGuide from './Components/pages/TourGuide';
 
 function App() {
   return (
+
     <Router>
       <AuthProvider>
+        <TourGuide />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          
+
           <Route path="/login" element={<AuthForm />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <Dashboard />
-            } 
+            }
           />
 
-         <Route 
-            path="/profile" 
+          <Route
+            path="/profile"
             element={
-             
-                <UserProfile />
-            } 
+
+              <UserProfile />
+            }
           />
-           
-        
-           <Route 
-            path="/pay" 
+
+
+          <Route
+            path="/trip"
             element={
-             
-                <Payment />
-            } 
+
+              <TripTracker />
+            }
           />
-           
-        <Route 
-            path="/bus-entry" 
+
+          <Route
+            path="/bus-entry"
             element={
               <ProtectedRoute requiredRole="admin">
                 <FleetManagement />
               </ProtectedRoute>
-            } 
+            }
           />
-        <Route 
-            path="/bus-list" 
+          <Route
+            path="/bus-list"
             element={
               <ProtectedRoute requiredRole="admin">
                 <BusList />
               </ProtectedRoute>
-            } 
+            }
           />
 
         </Routes>

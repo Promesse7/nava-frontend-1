@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plane, Calendar, CreditCard, MapPin, ChevronRight, Car } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {  Calendar, CreditCard, MapPin, ChevronRight, Car } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -18,7 +18,7 @@ const LandingPage = () => {
       description: "Find the perfect schedule that fits your travel plans."
     },
     {
-      icon: <Plane className="w-12 h-12 text-gray-400" />,
+      icon: <Car className="w-12 h-12 text-gray-400" />,
       title: "Select Ticket",
       description: "Choose from economy, business, or premium class options."
     },

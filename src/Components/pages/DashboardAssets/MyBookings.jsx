@@ -24,8 +24,11 @@ import {
   FaCheck,
   FaClock,
   FaUserAlt,
+  FaArrowLeft,
   FaClipboardCheck
 } from "react-icons/fa";
+import { FaMoneyBillWave, FaUniversity, FaMobileAlt, FaCreditCard } from 'react-icons/fa';
+
 import {
   collection,
   query,
@@ -55,6 +58,57 @@ const MyBookings = () => {
   const navigate = useNavigate();
   const [showBookARide, setShowBookARide] = useState(false);
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState({
+    momoPhone: '',
+    momoName: '',
+    bankName: '',
+    accountNumber: '',
+    accountName: ''
+  });
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+
+  // Add these functions to your component
+  const openPaymentModal = (trip) => {
+    setSelectedTrip(trip);
+    setPaymentMethod(null);
+    setPaymentStep(1);
+    setPaymentComplete(false);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentDetailsChange = (e) => {
+    setPaymentDetails({
+      ...paymentDetails,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const validatePaymentDetails = () => {
+    if (paymentMethod === 'momo') {
+      return paymentDetails.momoPhone.length >= 10 && paymentDetails.momoName.length > 0;
+    } else if (paymentMethod === 'bank') {
+      return paymentDetails.bankName.length > 0 &&
+        paymentDetails.accountNumber.length > 0 &&
+        paymentDetails.accountName.length > 0;
+    }
+    return false;
+  };
+
+  const processPayment = () => {
+    setIsProcessingPayment(true);
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsProcessingPayment(false);
+      setPaymentComplete(true);
+      setPaymentStep(3);
+      // Here you would normally update the trip's payment status in your database
+    }, 2000);
+  };
+
   // Helper functions to fix the undefined errors
   const calculateDaysRemaining = (date) => {
     if (!date) return 0;
@@ -64,8 +118,8 @@ const MyBookings = () => {
       typeof date === "string"
         ? new Date(date)
         : date.toDate
-        ? date.toDate()
-        : new Date(date);
+          ? date.toDate()
+          : new Date(date);
 
     const diffTime = Math.abs(tripDate - today);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -95,7 +149,7 @@ const MyBookings = () => {
 
   useEffect(() => {
     const unsubscribe = fetchBookings(); // Subscribe to real-time updates
-  
+
     return () => unsubscribe(); // Cleanup the listener when component unmounts
   }, []);
 
@@ -123,77 +177,77 @@ const MyBookings = () => {
     }
   };
 
-const fetchBookings = () => {
-  setLoading(true);
-  const user = auth.currentUser;
-  if (!user) {
-    setLoading(false);
-    return () => {};
-  }
+  const fetchBookings = () => {
+    setLoading(true);
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return () => { };
+    }
 
-  console.log("Listening for real-time bookings for user:", user.uid);
+    console.log("Listening for real-time bookings for user:", user.uid);
 
-  const tripsQuery = query(
-    collection(db, "bookings"),
-    where("userId", "==", user.uid)
-  );
-
-  const unsubscribe = onSnapshot(tripsQuery, async (snapshot) => {
-    const trips = await Promise.all(
-      snapshot.docs.map(async (doc) => {
-        const tripData = { id: doc.id, ...doc.data() };
-
-        console.log("Trip Data:", tripData);
-
-        // Ensure fleetId exists before fetching vehicle details
-        const vehicleDetails = tripData.fleetId
-          ? await fetchVehicleDetails(tripData.fleetId)
-          : null;
-
-        return { ...tripData, vehicle: vehicleDetails };
-      })
+    const tripsQuery = query(
+      collection(db, "bookings"),
+      where("userId", "==", user.uid)
     );
 
-    console.log("Updated trips data with vehicles:", trips);
+    const unsubscribe = onSnapshot(tripsQuery, async (snapshot) => {
+      const trips = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const tripData = { id: doc.id, ...doc.data() };
 
-    // Separate upcoming and past trips based on departureDate
-    const now = new Date();
-    const upcoming = trips.filter((trip) => {
-      const departureDate = trip.departureDate
-        ? typeof trip.departureDate === "string"
-          ? new Date(trip.departureDate)
-          : trip.departureDate.toDate()
-        : null;
+          console.log("Trip Data:", tripData);
 
-      return (
-        departureDate &&
-        departureDate > now &&
-        (trip.status === "pending" || trip.status === "approved")
+          // Ensure fleetId exists before fetching vehicle details
+          const vehicleDetails = tripData.fleetId
+            ? await fetchVehicleDetails(tripData.fleetId)
+            : null;
+
+          return { ...tripData, vehicle: vehicleDetails };
+        })
       );
+
+      console.log("Updated trips data with vehicles:", trips);
+
+      // Separate upcoming and past trips based on departureDate
+      const now = new Date();
+      const upcoming = trips.filter((trip) => {
+        const departureDate = trip.departureDate
+          ? typeof trip.departureDate === "string"
+            ? new Date(trip.departureDate)
+            : trip.departureDate.toDate()
+          : null;
+
+        return (
+          departureDate &&
+          departureDate > now &&
+          (trip.status === "pending" || trip.status === "approved")
+        );
+      });
+
+      const past = trips.filter((trip) => {
+        const departureDate = trip.departureDate
+          ? typeof trip.departureDate === "string"
+            ? new Date(trip.departureDate)
+            : trip.departureDate.toDate()
+          : null;
+
+        return (
+          !departureDate ||
+          departureDate < now ||
+          trip.status === "completed" ||
+          trip.status === "cancelled"
+        );
+      });
+
+      setUpcomingTrips(upcoming);
+      setPastTrips(past);
+      setLoading(false);
     });
 
-    const past = trips.filter((trip) => {
-      const departureDate = trip.departureDate
-        ? typeof trip.departureDate === "string"
-          ? new Date(trip.departureDate)
-          : trip.departureDate.toDate()
-        : null;
-
-      return (
-        !departureDate ||
-        departureDate < now ||
-        trip.status === "completed" ||
-        trip.status === "cancelled"
-      );
-    });
-
-    setUpcomingTrips(upcoming);
-    setPastTrips(past);
-    setLoading(false);
-  });
-
-  return unsubscribe; // Return the unsubscribe function to clean up the listener
-};
+    return unsubscribe; // Return the unsubscribe function to clean up the listener
+  };
 
 
   const cancelBooking = async (tripId) => {
@@ -263,8 +317,8 @@ const fetchBookings = () => {
         typeof dateString === "string"
           ? new Date(dateString)
           : dateString.toDate
-          ? dateString.toDate()
-          : new Date();
+            ? dateString.toDate()
+            : new Date();
 
       const options = {
         weekday: "short",
@@ -379,11 +433,10 @@ const fetchBookings = () => {
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 ">
               <button
-                className={`py-3 px-6 font-medium flex items-center ${
-                  selectedTab === "upcoming"
-                    ? "border-b-2 border-indigo-600 text-indigo-700"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-3 px-6 font-medium flex items-center ${selectedTab === "upcoming"
+                  ? "border-b-2 border-indigo-600 text-indigo-700"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
                 onClick={() => setSelectedTab("upcoming")}
               >
                 <FaCarSide className="mr-2" />
@@ -393,11 +446,10 @@ const fetchBookings = () => {
                 </span>
               </button>
               <button
-                className={`py-3 px-6 font-medium flex items-center ${
-                  selectedTab === "past"
-                    ? "border-b-2 border-indigo-600 text-indigo-700"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-3 px-6 font-medium flex items-center ${selectedTab === "past"
+                  ? "border-b-2 border-indigo-600 text-indigo-700"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
                 onClick={() => setSelectedTab("past")}
               >
                 <FaHistory className="mr-2" />
@@ -414,7 +466,7 @@ const fetchBookings = () => {
                 {upcomingTrips.length > 0 ? (
                   <>
                     {/* Sort and filter options */}
-                    <div className="flex flex-col md:flex-row justify-between mb-4 overflow-y-auto">
+                    <div className="flex flex-col md:flex-row justify-between mb-4 ">
                       <div className="mb-2 md:mb-0">
                         <select className="p-2 border border-gray-300 rounded-md text-gray-700">
                           <option>Sort by: Nearest Date</option>
@@ -433,7 +485,7 @@ const fetchBookings = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto ">
                       {upcomingTrips.map((trip) => (
                         <motion.div
                           whileHover={{ scale: 1.02 }}
@@ -444,111 +496,174 @@ const fetchBookings = () => {
                             <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center">
-                                  <FaCar className="text-2xl mr-3" />
+                                  <FaCar className="text-xl mr-2" />
                                   <div>
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="font-bold text-base">
                                       {trip.vehicle.name || "Booked Vehicle"}
                                     </h3>
-                                    <p className="text-indigo-100 text-sm">
+                                    <p className="text-indigo-100 text-xs">
                                       {trip.vehicle.type || "Standard"}
                                     </p>
                                   </div>
                                 </div>
-                                <div className="bg-white text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
-                                  Upcoming
+                                <div className="flex items-center space-x-2">
+                                  <div className="bg-white text-indigo-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                                    Upcoming
+                                  </div>
+                                  <button className="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200"
+                                  onClick={() => navigate('/trip')}
+                                  >
+                                    Track Trip
+                                  </button>
                                 </div>
                               </div>
                             </div>
 
-                            <CardContent className="p-5">
-                              <div className="flex items-start mb-4">
-                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
-                                  <FaCalendarAlt className="text-indigo-600" />
-                                </div>
+                            <CardContent className="p-6">
+                              <div className="flex items-start mb-2 mt-2">
+                                <FaCalendarAlt className="text-indigo-600 mr-2" />
                                 <div>
-                                  <p className="text-sm text-gray-500">
-                                    Departure Date
-                                  </p>
-                                  <p className="font-medium">
+                                  <p className="text-xs text-gray-500">Departure</p>
+                                  <p className="font-medium text-sm">
                                     {formatDate(trip.departureDate)}
                                   </p>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    {calculateDaysRemaining(trip.departureDate)}{" "}
-                                    days remaining
+                                </div>
+                              </div>
+
+                              <div className="flex items-start mb-2">
+                                <FaMapMarkerAlt className="text-indigo-600 mr-2" />
+                                <div>
+                                  <p className="text-xs text-gray-500">Route</p>
+                                  <p className="font-medium text-sm">
+                                    {trip.route || "Not specified"}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-start mb-4">
-                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
-                                  <FaMapMarkerAlt className="text-indigo-600" />
-                                </div>
+                              <div className="flex items-start mb-2">
+                                <FaClipboardCheck
+                                  className={`text-${trip.status === "approved"
+                                    ? "green"
+                                    : trip.status === "pending"
+                                      ? "yellow"
+                                      : "red"
+                                    }-600 mr-2`}
+                                />
                                 <div>
-                                  <p className="text-sm text-gray-500">Route</p>
-                                  <p className="font-medium">
-                                    {trip.route || "Route not specified"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Booking Status Section */}
-                              <div className="flex items-start mb-4">
-                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
-                                  <FaClipboardCheck
-                                    className={`text-${
-                                      trip.status === "approved"
-                                        ? "green"
-                                        : trip.status === "pending"
-                                        ? "yellow"
-                                        : "red"
-                                    }-600`}
-                                  />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">
-                                    Booking Status
-                                  </p>
+                                  <p className="text-xs text-gray-500">Status</p>
                                   <p
-                                    className={`font-medium text-${
-                                      trip.status === "approved"
-                                        ? "green"
-                                        : trip.status === "pending"
+                                    className={`font-medium text-sm text-${trip.status === "approved"
+                                      ? "green"
+                                      : trip.status === "pending"
                                         ? "yellow"
                                         : "red"
-                                    }-600`}
+                                      }-600`}
                                   >
                                     {trip.status || "Pending"}
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex items-start mb-4">
-                                <div className="bg-indigo-50 p-2 rounded-md mr-3">
-                                  <FaDollarSign className="text-indigo-600" />
-                                </div>
+
+                              <div className="flex items-start mb-2">
+                                <FaDollarSign className="text-indigo-600 mr-2" />
                                 <div>
-                                  <p className="text-sm text-gray-500">
-                                    Payment
-                                  </p>
-                                  <p className="font-medium">
+                                  <p className="text-xs text-gray-500">Payment</p>
+                                  <p className="font-medium text-sm">
                                     {trip.amount?.toFixed(2) || "0.00"} Rwf
                                   </p>
-                                    <p className="text-xs text-green-600 ">
-                                      {trip.paymentStatus || "Paid"}
-                                    </p>
                                 </div>
                               </div>
 
-                              <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between">
-                                <button className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors flex items-center">
-                                  <FaInfoCircle className="mr-2" /> Details
+                              <div className="border-t border-gray-100 pt-2 mt-2 flex justify-between gap-2">
+                                <button className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 text-xs flex items-center">
+                                  <FaInfoCircle className="mr-1" /> Details
+                                </button>
+                                <button
+                                  onClick={() => openPaymentModal(trip)}
+                                  className="px-2 py-1 bg-green-50 text-green-600 rounded-md hover:bg-green-100 text-xs flex items-center"
+                                >
+                                  <FaMoneyBillWave className="mr-1" /> Pay
                                 </button>
                                 <button
                                   onClick={() => cancelBooking(trip.id)}
-                                  className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors flex items-center"
+                                  className="px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-xs flex items-center"
                                 >
-                                  <FaRegTimesCircle className="mr-2" /> Cancel
+                                  <FaRegTimesCircle className="mr-1" /> Cancel
                                 </button>
                               </div>
+
+                              {showPaymentModal && (
+                                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                                  <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="bg-white rounded-lg p-4 max-w-sm w-full shadow-xl"
+                                  >
+                                    <div className="flex justify-between items-center mb-2">
+                                      <h3 className="text-lg font-semibold">
+                                        {paymentStep === 1 ? "Payment Method" : "Details"}
+                                      </h3>
+                                      <button
+                                        onClick={() => setShowPaymentModal(false)}
+                                        className="text-gray-400 hover:text-gray-600"
+                                      >
+                                        <FaTimes />
+                                      </button>
+                                    </div>
+
+                                    {selectedTrip && (
+                                      <div className="bg-gray-50 p-2 rounded-md mb-2">
+                                        <p className="font-medium text-sm">
+                                          {selectedTrip.vehicle?.name || "Booked Vehicle"}
+                                        </p>
+                                        <p className="text-xs text-indigo-600">
+                                          {selectedTrip.amount?.toFixed(2) || "0.00"} Rwf
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {paymentStep === 1 && (
+                                      <div className="grid grid-cols-2 gap-2 mb-4">
+                                        <div
+                                          className={`border rounded-lg p-2 text-center cursor-pointer ${paymentMethod === "momo" ? "border-indigo-500" : "border-gray-200"
+                                            }`}
+                                          onClick={() => setPaymentMethod("momo")}
+                                        >
+                                          <FaMobileAlt className="text-indigo-600 mx-auto" />
+                                          <p className="text-xs font-medium">Mobile Money</p>
+                                        </div>
+                                        <div
+                                          className={`border rounded-lg p-2 text-center cursor-pointer ${paymentMethod === "bank" ? "border-indigo-500" : "border-gray-200"
+                                            }`}
+                                          onClick={() => setPaymentMethod("bank")}
+                                        >
+                                          <FaUniversity className="text-indigo-600 mx-auto" />
+                                          <p className="text-xs font-medium">Bank</p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    <div className="flex justify-end space-x-2 mt-2">
+                                      <button
+                                        onClick={() => setShowPaymentModal(false)}
+                                        className="px-2 py-1 border border-gray-300 rounded-md text-xs"
+                                      >
+                                        Cancel
+                                      </button>
+                                      {paymentStep === 1 && (
+                                        <button
+                                          onClick={() => setPaymentStep(2)}
+                                          disabled={!paymentMethod}
+                                          className={`px-3 py-1 rounded-md text-xs ${paymentMethod ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-500"
+                                            }`}
+                                        >
+                                          Next
+                                        </button>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                </div>
+                              )}
                             </CardContent>
                           </Card>
                         </motion.div>
@@ -603,7 +718,7 @@ const fetchBookings = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-h-full overflow-y-auto">
                       {pastTrips.map((trip) => (
                         <motion.div
                           whileHover={{ scale: 1.02 }}
@@ -653,13 +768,7 @@ const fetchBookings = () => {
                                   <p className="text-sm text-gray-500">Route</p>
                                   <p className="font-medium">
                                     <span className="inline-block bg-gray-100 px-2 py-1 rounded text-sm mr-1">
-                                      {trip.pickupLocation ||
-                                        "Pickup not specified"}
-                                    </span>
-                                    <FaArrowRight className="inline text-gray-400 mx-1" />
-                                    <span className="inline-block bg-gray-100 px-2 py-1 rounded text-sm">
-                                      {trip.dropoffLocation ||
-                                        "Dropoff not specified"}
+                                      {trip.route}
                                     </span>
                                   </p>
                                 </div>
@@ -674,7 +783,7 @@ const fetchBookings = () => {
                                     Payment
                                   </p>
                                   <p className="font-medium">
-                                    ${trip.fare?.toFixed(2) || "0.00"}
+                                    ${trip.ammount?.toFixed(2) || "0.00"}
                                   </p>
                                 </div>
                               </div>
@@ -693,19 +802,7 @@ const fetchBookings = () => {
                                 </div>
                               </div>
 
-                              <div className="flex items-start mb-4">
-                                <div className="bg-green-50 p-2 rounded-md mr-3">
-                                  <FaUserAlt className="text-green-600" />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">
-                                    Passengers
-                                  </p>
-                                  <p className="font-medium">
-                                    {trip.passengers || "0"}
-                                  </p>
-                                </div>
-                              </div>
+
 
                               {trip.reviewed ? (
                                 <div className="mt-3 bg-yellow-50 p-3 rounded-md">
@@ -737,9 +834,8 @@ const fetchBookings = () => {
                               ) : null}
 
                               <div
-                                className={`border-t border-gray-100 pt-4 mt-4 flex justify-between ${
-                                  !trip.reviewed ? "mt-2" : ""
-                                }`}
+                                className={`border-t border-gray-100 pt-4 mt-4 flex justify-between ${!trip.reviewed ? "mt-2" : ""
+                                  }`}
                               >
                                 <button className="px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex items-center">
                                   <FaFileAlt className="mr-2" /> Receipt
@@ -820,9 +916,8 @@ const fetchBookings = () => {
                     {[...Array(5)].map((_, i) => (
                       <FaStar
                         key={i}
-                        className={`text-3xl cursor-pointer mx-1 transition-all duration-200 ${
-                          i < rating ? "text-yellow-500" : "text-gray-300"
-                        } ${i < rating ? "scale-110" : ""}`}
+                        className={`text-3xl cursor-pointer mx-1 transition-all duration-200 ${i < rating ? "text-yellow-500" : "text-gray-300"
+                          } ${i < rating ? "scale-110" : ""}`}
                         onClick={() => setRating(i + 1)}
                       />
                     ))}
@@ -831,14 +926,14 @@ const fetchBookings = () => {
                     {rating === 5
                       ? "Excellent"
                       : rating === 4
-                      ? "Very Good"
-                      : rating === 3
-                      ? "Good"
-                      : rating === 2
-                      ? "Fair"
-                      : rating === 1
-                      ? "Poor"
-                      : "Select a rating"}
+                        ? "Very Good"
+                        : rating === 3
+                          ? "Good"
+                          : rating === 2
+                            ? "Fair"
+                            : rating === 1
+                              ? "Poor"
+                              : "Select a rating"}
                   </p>
 
                   <p className="text-gray-600 mb-2 font-medium">
