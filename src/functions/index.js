@@ -1,139 +1,142 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
-const handlebars = require("handlebars"); // Consider using Handlebars for template rendering
+const sgMail = require("@sendgrid/mail");
+const fs = require('fs');
+const path = require('path');
 
+// Initialize Firebase Admin SDK
 admin.initializeApp();
 
-const gmailEmail = functions.config().gmail.email;
-const gmailPassword = functions.config().gmail.password;
+// Set SendGrid API Key from Firebase Config
+sgMail.setApiKey(functions.config().sendgrid.key);
 
-// Configure Nodemailer with improved security options
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: gmailEmail,
-    pass: gmailPassword,
-  },
-  // Additional security and performance configurations
-  pool: true,
-  rateLimit: 5, // Max 5 emails per second
-  maxConnections: 10,
+// Load email template
+const emailTemplatePath = path.join(__dirname, 'booking-confirmation-template.html');
+const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf8');
+
+// Primary Email Sending Cloud Function
+exports.sendBookingEmail = functions.firestore
+  .document("bookings/{bookingId}")
+  .onCreate(async (snap, context) => {
+    const bookingData = snap.data();
+    
+    // Validate required fields
+    if (!bookingData.email || !bookingData.customerName) {
+      console.error("Missing required booking information");
+      return null;
+    }
+
+    // Replace placeholders in the email template
+    const personalizedEmail = emailTemplate
+      .replace('{{customerName}}', bookingData.customerName)
+      .replace('{{route}}', bookingData.route || 'Not Specified')
+      .replace('{{departureDate}}', bookingData.departureDate || 'Not Specified')
+      .replace('{{seatNumber}}', bookingData.seatNumber || 'Not Assigned')
+      .replace('{{amount}}', bookingData.amount || '0');
+
+    // Email configuration
+    const msg = {
+      to: bookingData.email,
+      from: "bookings@travelrwanda.com", // Your verified SendGrid email
+      subject: "Booking Confirmation - Travel Rwanda",
+      html: personalizedEmail,
+      text: `Booking Confirmation for ${bookingData.customerName} - Route: ${bookingData.route || 'Not Specified'}`
+    };
+
+    try {
+      // Send email
+      await sgMail.send(msg);
+      console.log("Booking confirmation email sent to:", bookingData.email);
+      
+      // Update booking document
+      await snap.ref.update({ 
+        emailSent: true, 
+        emailSentAt: admin.firestore.FieldValue.serverTimestamp() 
+      });
+
+      return null;
+    } catch (error) {
+      console.error("Error sending email:", error);
+      
+      // Log email sending failure
+      await snap.ref.update({ 
+        emailSent: false, 
+        emailError: error.toString(),
+        emailFailedAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      return null;
+    }
+  });
+
+// Periodic Email Retry Mechanism
+exports.retryFailedEmails = functions.pubsub.schedule('every 1 hours').onRun(async context => {
+  try {
+    // Find bookings with failed email sends in last 24 hours
+    const failedEmailsSnapshot = await admin.firestore()
+      .collection('bookings')
+      .where('emailSent', '==', false)
+      .where('createdAt', '>=', new Date(Date.now() - 24 * 60 * 60 * 1000))
+      .limit(10)  // Limit to prevent overwhelming SendGrid
+      .get();
+
+    const batch = admin.firestore().batch();
+    
+    failedEmailsSnapshot.forEach(async doc => {
+      const bookingData = doc.data();
+      
+      // Resend email logic similar to primary function
+      const personalizedEmail = emailTemplate
+        .replace('{{customerName}}', bookingData.customerName)
+        .replace('{{route}}', bookingData.route || 'Not Specified')
+        .replace('{{departureDate}}', bookingData.departureDate || 'Not Specified')
+        .replace('{{seatNumber}}', bookingData.seatNumber || 'Not Assigned')
+        .replace('{{amount}}', bookingData.amount || '0');
+
+      const msg = {
+        to: bookingData.email,
+        from: "bookings@travelrwanda.com",
+        subject: "Booking Confirmation - Travel Rwanda",
+        html: personalizedEmail
+      };
+
+      try {
+        await sgMail.send(msg);
+        batch.update(doc.ref, { 
+          emailSent: true, 
+          emailRetriedAt: admin.firestore.FieldValue.serverTimestamp() 
+        });
+      } catch (error) {
+        console.error(`Retry failed for booking ${doc.id}:`, error);
+      }
+    });
+
+    // Commit batch updates
+    await batch.commit();
+    return null;
+  } catch (error) {
+    console.error("Error in email retry mechanism:", error);
+    return null;
+  }
 });
 
-// HTML Email Template
-const emailTemplate = handlebars.compile(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket Confirmation</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
-            max-width: 600px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-        .ticket-details {
-            background-color: #f4f4f4;
-            border-radius: 5px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .header {
-            background-color: #0066cc;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
-        .footer {
-            text-align: center;
-            font-size: 0.8em;
-            color: #666;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Travel Rwanda - Ticket Confirmation</h1>
-    </div>
-    
-    <p>Dear Traveler,</p>
-    
-    <div class="ticket-details">
-        <h2>Booking Details</h2>
-        <p><strong>Booking Number:</strong> {{bookingNumber}}</p>
-        <p><strong>Route:</strong> {{route}}</p>
-        <p><strong>Departure Date:</strong> {{departureDate}}</p>
-        <p><strong>Seat Number:</strong> {{seatNumber}}</p>
-        <p><strong>Amount Paid:</strong> {{amount}}</p>
-    </div>
+// Optional: Webhook for tracking email events
+exports.sendgridWebhook = functions.https.onRequest(async (req, res) => {
+  const events = req.body;
+  
+  events.forEach(async event => {
+    switch(event.event) {
+      case 'delivered':
+        // Update firestore document
+        break;
+      case 'opened':
+        // Track email opens
+        break;
+      case 'clicked':
+        // Track link clicks
+        break;
+    }
+  });
 
-    <p>Thank you for choosing Travel Rwanda. We wish you a pleasant journey!</p>
-
-    <div class="footer">
-        <p>Questions? Contact our customer support at support@travelrwanda.com</p>
-        <p>&copy; 2024 Travel Rwanda. All rights reserved.</p>
-    </div>
-</body>
-</html>
-`);
-
-// Function to validate and sanitize email input
-function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// Function to send ticket email
-exports.sendTicketEmail = functions.firestore
-    .document("bookings/{bookingId}")
-    .onCreate(async (snapshot, context) => {
-        const bookingData = snapshot.data();
-        const email = bookingData.email;
-
-        // Validate email
-        if (!email || !validateEmail(email)) {
-            console.log("Invalid email, skipping email sending.");
-            return null;
-        }
-
-        // Prepare email data
-        const mailOptions = {
-            from: `Travel Rwanda <${gmailEmail}>`,
-            to: email,
-            subject: `Your Ticket Confirmation - Booking #${bookingData.bookingNumber}`,
-            html: emailTemplate({
-                bookingNumber: bookingData.bookingNumber || 'N/A',
-                route: bookingData.route || 'Not Specified',
-                departureDate: bookingData.departureDate || 'Not Specified',
-                seatNumber: bookingData.seatNumber || 'Unassigned',
-                amount: bookingData.amount ? `$${bookingData.amount.toFixed(2)}` : 'N/A'
-            }),
-        };
-
-        try {
-            // Send email with retry mechanism
-            await transporter.sendMail(mailOptions);
-            console.log("Ticket email sent successfully to:", email);
-        } catch (error) {
-            console.error("Error sending email:", error);
-            
-            // Optional: Implement a retry mechanism or error logging
-            await admin.firestore()
-                .collection('email-errors')
-                .add({
-                    email: email,
-                    bookingId: context.params.bookingId,
-                    errorMessage: error.message,
-                    timestamp: admin.firestore.FieldValue.serverTimestamp()
-                });
-        }
-
-        return null;
-    });
+  res.status(200).send('Webhook received');
+});
