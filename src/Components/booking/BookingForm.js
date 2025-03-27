@@ -9,8 +9,11 @@ import { auth } from "../../firebase";
 import { updateSeatStatus } from "../../services/fleetService";
 import SeatBooking from "../pages/booking/BookingSeat";
 import { sendNotificationToAdmin } from "../../services/notificationService";
+import { X, User, MapPin, Calendar, CreditCard } from 'lucide-react';
 
-const BookingForm = () => {
+const BookingForm = ({
+  onClose = () => { }
+}) => {
   const [route, setRoute] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [selectedFleet, setSelectedFleet] = useState("");
@@ -116,6 +119,9 @@ const BookingForm = () => {
     loadFleetOptions();
   }, [route]);
 
+
+
+
   const validateForm = () => {
     const errors = {};
 
@@ -157,13 +163,13 @@ const BookingForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form submission started");
-  
+
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-  
+
     // Debugging: Log current form values
     console.log("Form values:", {
       route,
@@ -173,7 +179,7 @@ const BookingForm = () => {
       phoneNumber,
       selectedSeat,
     });
-  
+
     // Validate form fields
     if (
       !route ||
@@ -185,13 +191,12 @@ const BookingForm = () => {
       console.log("Validation failed", formErrors);
       return;
     }
-  
+
     setSubmitting(true);
     setBookingStatus("processing");
     console.log("Set status to processing");
-  
+
     try {
-      // Call makeBooking() to create a booking ✅
       const bookingId = await makeBooking(
         selectedFleet,
         route,
@@ -204,30 +209,30 @@ const BookingForm = () => {
           email
         }
       );
-  
-      console.log("Booking created with ID:", bookingId);
-  
-      // Update seat status in Firebase
+
+      // Update seat status
       await updateSeatStatus(selectedFleet, selectedSeat, "booked", userId);
-  
-      console.log("Setting success status");
+
       setBookingStatus("success");
-  
-      // Reset form values after success ✅
       resetForm();
-  
+
+      // Close the modal after successful booking
       setTimeout(() => {
         setSubmitting(false);
         setBookingStatus(null);
+        onClose();
       }, 2000);
     } catch (err) {
       console.error("Error in submission:", err);
       setBookingStatus("error");
-  
-      setTimeout(() => setBookingStatus(null), 3000);
+
+      setTimeout(() => {
+        setBookingStatus(null);
+        setSubmitting(false);
+      }, 3000);
     }
   };
-  
+
   // Function to reset form fields ✅
   const resetForm = () => {
     setRoute("");
@@ -239,7 +244,7 @@ const BookingForm = () => {
     setEmail("");
     setFormErrors({});
   };
-  
+
 
 
   // Determine if form is in loading state
@@ -334,7 +339,7 @@ const BookingForm = () => {
   };
 
   return (
-    <div className="h-full w-full flex items-center justify-center p-4">
+    <div className="fixed inset-0 flex h-screen items-center justify-center bg-gray-900 bg-opacity-50 z-50 ">
       {renderStatusMessage()}
       <div className="max-w-lg w-full bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
         <div className="bg-black text-white py-4 px-6 sticky top-0 z-10">
@@ -365,330 +370,201 @@ const BookingForm = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Customer information */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-800">
-                  Customer Information
-                </h3>
-                <div className="space-y-4">
-                  {/* Customer name */}
+            <button
+              onClick={onClose}
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+            >
+              <X   onClick={onClose}  size={24} />
+            </button>
+
+            <h2 className="text-lg font-bold mb-4">Book Your Ride</h2>
+
+            <form className="p-6 overflow-y-auto max-h-[80vh]" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column - Customer Information */}
+                <div className="space-y-6">
                   <div>
-                    <label
-                      htmlFor="customerName"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <User size={18} />
                       Full Name
                     </label>
                     <input
-                      id="customerName"
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Enter your full name"
                       required
-                      className={`block w-full pl-3 pr-10 py-3 text-base border ${
-                        formErrors.customerName
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      } focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md`}
                     />
                     {formErrors.customerName && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.customerName}
-                      </p>
+                      <p className="text-red-500 text-xs mt-1">{formErrors.customerName}</p>
                     )}
                   </div>
 
-                  {/* Phone number */}
                   <div>
-                    <label
-                      htmlFor="phoneNumber"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <User size={18} />
                       Phone Number
                     </label>
                     <input
-                      id="phoneNumber"
                       type="tel"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                      className={`block w-full pl-3 pr-10 py-3 text-base border ${
-                        formErrors.phoneNumber
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      } focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md`}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="e.g. 0798123456"
+                      required
                     />
                     {formErrors.phoneNumber && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.phoneNumber}
-                      </p>
+                      <p className="text-red-500 text-xs mt-1">{formErrors.phoneNumber}</p>
                     )}
                   </div>
 
-                  {/* Email (optional) */}
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <User size={18} />
                       Email (Optional)
                     </label>
                     <input
-                      id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`block w-full pl-3 pr-10 py-3 text-base border ${
-                        formErrors.email ? "border-red-300" : "border-gray-300"
-                      } focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md`}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="example@email.com"
                     />
                     {formErrors.email && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.email}
-                      </p>
+                      <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Trip information */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-800">
-                  Trip Information
-                </h3>
-
-                {/* Route selection */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="route"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Route
-                  </label>
-                  <div className="relative">
+                {/* Right Column - Trip Information */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <MapPin size={18} />
+                      Route
+                    </label>
                     <select
-                      id="route"
                       value={route}
                       onChange={(e) => handleRouteChange(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                       required
-                      className={`block w-full pl-3 pr-10 py-3 text-base border-gray-300 border focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md appearance-none ${
-                        loadingRoutes ? "bg-gray-100 cursor-wait" : ""
-                      }`}
-                      aria-describedby={routeError ? "route-error" : undefined}
-                      disabled={loadingRoutes}
                     >
-                      <option value="">
-                        {loadingRoutes ? "Loading routes..." : "Select a route"}
-                      </option>
+                      <option value="">Select a route</option>
                       {availableRoutes.map((routeOption) => (
                         <option key={routeOption} value={routeOption}>
                           {routeOption}
                         </option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <svg
-                        className="h-4 w-4 fill-current"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                      </svg>
-                    </div>
-                  </div>
-                  {routeError && (
-                    <p id="route-error" className="mt-1 text-sm text-red-600">
-                      {routeError}
-                    </p>
-                  )}
-
-                  {/* Departure date selection */}
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="departureDate"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Departure Date
-                    </label>
-                    <input
-                      id="departureDate"
-                      type="datetime-local"
-                      value={departureDate}
-                      onChange={(e) => handleDateChange(e.target.value)}
-                      required
-                      min={new Date().toISOString().slice(0, 16)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border-gray-300 border focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md appearance-none"
-                    />
-                  </div>
-
-                  {/* Fleet selection */}
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="fleet"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Vehicle
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="fleet"
-                        value={selectedFleet}
-                        onChange={(e) => handleFleetChange(e.target.value)}
-                        required
-                        className={`block w-full pl-3 pr-10 py-3 text-base border-gray-300 border focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all bg-white rounded-md appearance-none ${
-                          loadingFleets ? "bg-gray-100 cursor-wait" : ""
-                        }`}
-                        aria-describedby={
-                          fleetError ? "fleet-error" : undefined
-                        }
-                        disabled={loadingFleets}
-                      >
-                        <option value="">
-                          {loadingFleets
-                            ? "Loading vehicles..."
-                            : "Select a vehicle"}
-                        </option>
-                        {fleetOptions.map((fleet) => (
-                          <option key={fleet.id} value={fleet.id}>
-                            {fleet.name} - {fleet.type} ({fleet.seatCapacity}{" "}
-                            seats)
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <svg
-                          className="h-4 w-4 fill-current"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                        </svg>
-                      </div>
-                    </div>
-                    {fleetError && (
-                      <p id="fleet-error" className="mt-1 text-sm text-red-600">
-                        {fleetError}
-                      </p>
+                    {routeError && (
+                      <p className="text-red-500 text-xs mt-1">{routeError}</p>
                     )}
                   </div>
 
-                  {/* Only show SeatBooking if a fleet is selected */}
-                  {selectedFleet && (
-                    <SeatBooking
-                      fleetId={selectedFleet}
-                      userId={userId}
-                      onSeatSelect={handleSeatSelect}
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <Calendar size={18} />
+                      Departure Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={departureDate}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      min={new Date().toISOString().slice(0, 16)}
+                      required
                     />
+                    {formErrors.departureDate && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.departureDate}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                      <User size={18} />
+                      Vehicle
+                    </label>
+                    <select
+                      value={selectedFleet}
+                      onChange={(e) => handleFleetChange(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                      required
+                    >
+                      <option value="">Select a vehicle</option>
+                      {fleetOptions.map((fleet) => (
+                        <option key={fleet.id} value={fleet.id}>
+                          {fleet.name} - {fleet.type} ({fleet.seatCapacity} seats)
+                        </option>
+                      ))}
+                    </select>
+                    {fleetError && (
+                      <p className="text-red-500 text-xs mt-1">{fleetError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Seat Selection */}
+              {selectedFleet && (
+                <div className="mt-6 border-t pt-6">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <User size={18} />
+                    Select Your Seat
+                  </label>
+                  <SeatBooking
+                    fleetId={selectedFleet}
+                    userId={userId}
+                    onSeatSelect={handleSeatSelect}
+                  />
+                  {formErrors.selectedSeat && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.selectedSeat}</p>
                   )}
                 </div>
+              )}
 
-                {/* Payment information */}
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium text-gray-800">
-                    Payment Information
-                  </h3>
+              {/* Payment Information */}
+              <div className="mt-6 border-t pt-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <CreditCard size={18} />
+                  Amount
+                </label>
+                <input
+                  type="text"
+                  value={`₦${amount.toLocaleString()}`}
+                  readOnly
+                  className="w-full p-3 border border-gray-300 rounded-md shadow-sm bg-gray-50"
+                />
+              </div>
 
-                  {/* Amount display */}
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="amount"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Amount
-                    </label>
-                    <input
-                      id="amount"
-                      type="text"
-                      value={`₦${amount.toLocaleString()}`}
-                      readOnly
-                      className="block w-full pl-3 pr-10 py-3 text-base border-gray-300 border bg-gray-50 rounded-md appearance-none"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Standard fare for all routes
-                    </p>
-                  </div>
-
-                  {/* Payment method */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Payment Method
-                    </label>
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0">
-                          <svg
-                            className="h-5 w-5 text-yellow-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-yellow-700">
-                            You will pay at our terminal before departure. No
-                            online payment is required.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Terms and conditions */}
-                <div className="flex items-start space-x-2 mt-6">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="terms"
-                      name="terms"
-                      type="checkbox"
-                      required
-                      className="h-4 w-4 text-black border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label
-                      htmlFor="terms"
-                      className="font-medium text-gray-700"
-                    >
-                      I agree to the terms and conditions
-                    </label>
-                    <p className="text-gray-500">
-                      By booking, you agree to our refund policy and terminal
-                      rules.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Submit button */}
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 mt-8 border-t pt-6">
+                <button
+                  type="button"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={onClose}
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  onClick={handleSubmit}
-                  disabled={!selectedSeat}
-                  className={`w-full px-4 py-3 bg-black text-white rounded-md transition-colors duration-300 flex items-center justify-center ${
-                    !canSubmit
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-800"
-                  }`}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400"
+                  disabled={!selectedSeat || submitting}
                 >
-                  {submitting ? (
-                    <>
-                      <span className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></span>
-                      Processing...
-                    </>
-                  ) : (
-                    "Book Now"
-                  )}
+                  {submitting ? 'Processing...' : 'Book Now'}
                 </button>
               </div>
+
+              {/* Status Messages */}
+              {bookingStatus === "processing" && (
+                <div className="mt-4 text-center text-gray-600">Processing your booking...</div>
+              )}
+              {bookingStatus === "success" && (
+                <div className="mt-4 text-center text-green-600">Booking Successful!</div>
+              )}
+              {bookingStatus === "error" && (
+                <div className="mt-4 text-center text-red-600">Booking Failed. Please try again.</div>
+              )}
             </form>
           </div>
         )}

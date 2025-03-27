@@ -23,7 +23,6 @@ import Input from "../ui/Input";
 import { db, auth } from "../../firebase"; // Import Firestore and Auth
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { signOut, getAuth } from "firebase/auth";
-import { Switch } from "@headlessui/react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -294,7 +293,7 @@ const ProfilePage = () => {
             >
               <option value="English">English</option>
               <option value="French">French</option>
-              <option value="Spanish">Spanish</option>
+              <option value="Spanish">Kinyarwanda</option>
             </select>
           </div>
         </div>

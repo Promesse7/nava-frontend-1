@@ -485,7 +485,7 @@ const MyBookings = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto ">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[700px] overflow-y-auto ">
                       {upcomingTrips.map((trip) => (
                         <motion.div
                           whileHover={{ scale: 1.02 }}
@@ -783,7 +783,7 @@ const MyBookings = () => {
                                     Payment
                                   </p>
                                   <p className="font-medium">
-                                    ${trip.ammount?.toFixed(2) || "0.00"}
+                                    Rwf {trip.amount?.toFixed(2) || "0.00"}
                                   </p>
                                 </div>
                               </div>
