@@ -15,7 +15,6 @@ function App() {
 
     <Router>
       <AuthProvider>
-        <TourGuide />
         <Routes>
           <Route path="/" element={<HomePage />} />
 

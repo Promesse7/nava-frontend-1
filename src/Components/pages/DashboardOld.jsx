@@ -36,7 +36,7 @@ const AccessibleTicketBooking = () => {
       name: 'Broadway Show',
       date: 'August 22, 2025',
       time: '8:00 PM',
-      venue: 'Theater District',
+      venue: 'Rusizi District',
       price: 89.50,
       availableSeats: 50
     }
@@ -45,7 +45,7 @@ const AccessibleTicketBooking = () => {
   const [cart, setCart] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [ticketQuantity, setTicketQuantity] = useState(1);
-  const [searchLocation, setSearchLocation] = useState('New York');
+  const [searchLocation, setSearchLocation] = useState('Kigali');
 
 
 
@@ -195,12 +195,7 @@ const AccessibleTicketBooking = () => {
         <div className="mb-4">
 
           <div className="flex items-center space-x-2 justify-center my-10">
-            {/* Waveform Animation (visible when listening) */}
-           {isListening && (
-        <div className="absolute inset-0 flex items-center justify-center">
-         <Lottie animationData={waveformAnimation} loop={true} style={{ width: 400, height: 400 }} />
-        </div>
-      )}
+         
             <button
               onClick={startVoiceRecognition}
               disabled={!isSpeechRecognitionSupported}
@@ -210,7 +205,7 @@ const AccessibleTicketBooking = () => {
                 } transition-colors`}
               aria-label="Start Voice Recognition"
             >
-              <FaMicrophone className="w-20 h-20 text-center align-middle" />
+              <FaMicrophone className="w-[15vw] h-[15vh] text-center " />
             </button>
           </div>
           <div className="flex items-center space-x-2">
@@ -271,7 +266,7 @@ const AccessibleTicketBooking = () => {
                   {event.date} | {event.time}
                 </p>
                 <p className="text-sm text-gray-600">{event.venue}</p>
-                <p className="font-semibold">${event.price.toFixed(2)}</p>
+                <p className="font-semibold">Rwf{event.price.toFixed(2)}</p>
               </div>
               <div className="flex items-center space-x-2">
                 <button

@@ -62,7 +62,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
 
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -216,8 +216,8 @@ const Dashboard = () => {
       icon: "M3 10h18M5 6h14M5 14h14M8 18h8M12 14v4",
     },
     {
-      id: "routes-pricing",
-      label: "Routes & Pricing",
+      id: "voice-chat",
+      label: "Talk to Me",
       icon: "M4 6h16M4 18h16M12 6v12M9 9h3m3 0h3m-9 6h6",
     },
   ];
@@ -258,8 +258,8 @@ const Dashboard = () => {
           return <SupportHelpCenter />;
         case "payment-methods":
           return <PaymentMethods />;
-        case "routes-pricing":
-          return <RoutesPricing />;
+        case "voice-chat":
+          return <DashboardOld />;
         case "book-ride":
           return <BookRide />;
         default:
@@ -275,9 +275,9 @@ const Dashboard = () => {
     <div className="w-full h-screen bg-gray-100 flex overflow-hidden" id="step1">
       {/* Sidebar */}
       <div
-        className={`relative transition-all duration-300 ease-in-out 
-        ${isCollapsed ? 'w-20' : 'w-64'} 
-        bg-white shadow-md h-full overflow-hidden`}
+        className={`relative transition-all duration-300 ease-in-out flex-shrink-0
+                ${isCollapsed ? 'w-20' : 'w-64'} 
+                bg-white shadow-md h-full overflow-hidden`}
       >
         {/* Collapse/Expand Button */}
         <button
@@ -293,121 +293,90 @@ const Dashboard = () => {
             <div className="relative">
               <img
                 src={userData.avatar}
-                alt=""
+                alt="Profile"
                 className="w-16 h-16 rounded-full border-2 border-white"
               />
+
               <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 rounded-full border-2 border-white"></div>
             </div>
-
             {!isCollapsed && (
               <div className="mt-2 text-center">
                 <h3 className="text-gray-800 font-medium">{userData.name}</h3>
-                <p className="text-gray-500 text-sm">{userData.role}</p>
+                <p className="text-gray-500 text-sm capitalize">{userData.role}</p>
+
+                <div className="mt-6 flex justify-around cursor-pointer">
+
+
+                  <div
+                    className="flex flex-col items-center "
+                    onClick={() => navigate("/profile")}
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    <span className="text-xs text-gray-600 mt-1">Profile</span>
+                  </div>
+
+                  <div className="flex flex-col items-center cursor-pointer">
+                    <svg
+                      className="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="text-xs text-gray-600 mt-1" onClick={handleFetchData}>
+                      Gallery
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center cursor-pointer">
+                    <svg
+                      className="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                      />
+                    </svg>
+                    <span className="text-xs text-gray-600 mt-1">Notifications</span>
+                  </div>
+                </div>
               </div>
             )}
+
           </div>
-
-          {!isCollapsed && (
-            <div className="mt-6 flex justify-around cursor-pointer">
-              <div
-                className="flex flex-col items-center"
-                onClick={() => navigate("/profile")}
-              >
-                <svg
-                  className="w-6 h-6 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-                <span className="text-xs text-gray-600 mt-1">Profile</span>
-              </div>
-
-              <div className="flex flex-col items-center cursor-pointer">
-                <svg
-                  className="w-6 h-6 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="text-xs text-gray-600 mt-1">Gallery</span>
-              </div>
-
-              <div className="flex flex-col items-center cursor-pointer">
-                <svg
-                  className="w-6 h-6 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                <span className="text-xs text-gray-600 mt-1">Notifications</span>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Project Selection */}
-        {!isCollapsed && (
-          <div className="px-4 py-3">
-            <div className="bg-gray-200 rounded-md p-3 flex items-center justify-between">
-              <span className="text-gray-700">Select Car</span>
-              <svg
-                className="w-5 h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-        )}
-
         {/* Menu Items */}
-        <nav className="snap-y overflow-hidden">
+        <nav className="mt-4">
           <div
-            className={`px-4 py-3 flex items-center space-x-3 
-            ${isCollapsed ? 'justify-center' : 'text-gray-700 font-medium'}`}
-          >
-            {isCollapsed ? <span className="text-xs">Menu</span> : <span>Home</span>}
-          </div>
-
-          {/* Dashboard Item */}
-          <div
-            className={`px-4 py-3 flex items-center space-x-3 border-r-4 
-            ${activeTab === "dashboard"
-                ? "bg-gray-100 border-gray-800 text-gray-800"
-                : "bg-gray-200 border-transparent text-gray-600"
-              } ${isCollapsed ? 'justify-center' : ''}`}
+            className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
+                        ${isCollapsed ? 'justify-center' : ''}`}
             onClick={() => setActiveTab("dashboard")}
-            title="Dashboard"
           >
-            <div className="w-6 h-6 rounded-md bg-gray-700 flex items-center justify-center">
+            <div className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded-md">
               <svg
                 className="w-4 h-4 text-white"
                 fill="none"
@@ -421,71 +390,66 @@ const Dashboard = () => {
                   d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                 />
               </svg>
+
             </div>
-            {!isCollapsed && <span>Dashboard</span>}
-            {!isCollapsed && <div className="w-2 h-2 rounded-full bg-gray-800 ml-auto"></div>}
+            {!isCollapsed && <span className="text-gray-700"   onClick={() => setActiveTab("overview")}>Dashboard</span>}
           </div>
 
           {/* Admin menu items */}
-          {userData.role === "admin" && (
-            <>
-              {adminTabs.map((tab) => (
-                <div
-                  key={tab.id}
-                  className={`px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition 
-                  ${isCollapsed ? 'justify-center' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  title={tab.label}
+          {userData.role === "admin" && adminTabs.map((tab) => (
+            <div
+              key={tab.id}
+              className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
+                            ${isCollapsed ? 'justify-center' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.label}
+            >
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded-md">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <div className="w-6 h-6 rounded-md flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={tab.icon}
-                      />
-                    </svg>
-                  </div>
-                  {!isCollapsed && <span>{tab.label}</span>}
-                </div>
-              ))}
-            </>
-          )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={tab.icon}
+                  />
+                </svg>
+              </div>
+              {!isCollapsed && <span>{tab.label}</span>}
+            </div>
+          ))}
 
           {/* User menu items */}
-          {userData.role === "common user" &&
-            userTabs.map((tab) => (
-              <div
-                key={tab.id}
-                className={`px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition 
-                ${isCollapsed ? 'justify-center' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-                title={tab.label}
-              >
-                <div className="w-6 h-6 rounded-md flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={tab.icon}
-                    />
-                  </svg>
-                </div>
-                {!isCollapsed && <span>{tab.label}</span>}
+          {userData.role === "common user" && userTabs.map((tab) => (
+            <div
+              key={tab.id}
+              className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
+                            ${isCollapsed ? 'justify-center' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.label}
+            >
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded-md">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={tab.icon}
+                  />
+                </svg>
               </div>
-            ))}
+              {!isCollapsed && <span>{tab.label}</span>}
+            </div>
+          ))}
         </nav>
       </div>
 
