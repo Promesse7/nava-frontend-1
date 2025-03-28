@@ -73,26 +73,70 @@
 
             <p>Your booking is confirmed! We're excited to have you join us on your upcoming journey.</p>
 
-            <div class="booking-details">
-                <h2>Booking Details</h2>
-                <p><strong>Route:</strong> {{route}}</p>
-                <p><strong>Departure Date:</strong> {{departureDate}}</p>
-                <p><strong>Seat Number:</strong> {{seatNumber}}</p>
-                <p><strong>Amount Paid:</strong> {{amount}} RWF</p>
-                <p><strong>QR Code:</strong></p>
-                <div>{{qrCode}}</div> <!-- Placeholder for the QR code -->
+            <!-- Booking Details -->
+            <div class="booking-details" style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h3 style="color: #1a3c34; font-size: 20px; margin: 0 0 15px;">Booking Details</h3>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="5">
+                    <tr>
+                        <td style="color: #333333; font-size: 16px; width: 40%;"><strong>Booking Number:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{bookingNumber}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Route:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{route}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Departure Date:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{departureDate}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Seat Number:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{seatNumber}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Amount Paid:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{amount}} RWF</td>
+                    </tr>
+                   
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Booking Status:</strong></td>
+                        <td style="color: #555555; font-size: 16px; text-transform: capitalize;">{{status}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Phone Number:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{phoneNumber}}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #333333; font-size: 16px;"><strong>Booking Created:</strong></td>
+                        <td style="color: #555555; font-size: 16px;">{{createdAt}}</td>
+                    </tr>
+                </table>
+
+                <!-- QR Code -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <p style="color: #333333; font-size: 16px; margin: 0 0 10px;"><strong>Your QR Code:</strong></p>
+                 <img src="../src/assets/QR Code.png" alt="">
+                    <p style="color: #666666; font-size: 14px; margin: 10px 0 0;">Scan this QR code at the boarding point to validate your ticket.</p>
+                </div>
             </div>
 
-            <a href="#" class="cta-button">View Booking Details</a>
-
-            <p>If you have any questions about your booking, please don't hesitate to contact our customer support.</p>
+            <!-- Travel Tips -->
+            <div class="travel-tips" style="background-color: #e6f0ea; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h3 style="color: #1a3c34; font-size: 20px; margin: 0 0 15px;">Travel Tips</h3>
+                <ul style="color: #555555; font-size: 16px; line-height: 1.6; margin: 0; padding-left: 20px;">
+                    <li>Arrive at the boarding point at least 15 minutes before departure.</li>
+                    <li>Keep your QR code ready for scanning.</li>
+                    <li>Carry a valid ID for verification.</li>
+                    <li>Contact us at <a href="tel:+250798515489" style="color: #1a3c34; text-decoration: none;">+250 798 515 489</a> for any assistance.</li>
+                </ul>
+            </div>
 
             <p>Thank you for choosing Travel Rwanda!</p>
         </div>
 
         <div class="footer">
             <p>© 2025 Travel Rwanda | All Rights Reserved</p>
-            <p>Customer Support: +250 788 XXXXXX</p>
+            <p>Customer Support: +250 788 64586 || support@travelrda.com</p>
         </div>
     </div>
 </body>

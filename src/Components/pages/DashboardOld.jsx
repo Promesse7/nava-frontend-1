@@ -1,476 +1,349 @@
-import React from 'react';
-import { useEffect, useState } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  User, Ticket, Clock, Settings, LogOut, Bell, Search,
-  CreditCard, Calendar, Map, ChevronRight, Filter, Users,
-  BarChart, AlertTriangle, CheckCircle, TrendingUp, Bus,
-  Download, Printer
+  Send,
+  ArrowRight,
+  MapPin,
+  Calendar,
+  CreditCard,
+  ChevronDown,
+  PlusCircle,
+  MinusCircle
 } from 'lucide-react';
-import Loader from '../common/LoadingSpinner'
-import {Link, useNavigate} from 'react-router-dom';
+
+import Lottie from 'react-lottie';
+import waveformAnimation from "../../assets/animations/waveform-animation.json";
+import { FaMicrophone } from 'react-icons/fa';
+
+const AccessibleTicketBooking = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState('');
+  const [actionHistory, setActionHistory] = useState([]);
+  const recognitionRef = useRef(null);
+
+  // Ticket Booking State
+  const [events, setEvents] = useState([
+    {
+      id: 1,
+      name: 'Summer Music Festival',
+      date: 'July 15, 2025',
+      time: '7:00 PM',
+      venue: 'Central Park',
+      price: 65.00,
+      availableSeats: 100
+    },
+    {
+      id: 2,
+      name: 'Broadway Show',
+      date: 'August 22, 2025',
+      time: '8:00 PM',
+      venue: 'Theater District',
+      price: 89.50,
+      availableSeats: 50
+    }
+  ]);
+
+  const [cart, setCart] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [searchLocation, setSearchLocation] = useState('New York');
 
 
-// initializing Firebase
-import { auth, db } from "../../firebase"; // Ensure this is correctly imported
-import { doc, getDoc } from "firebase/firestore";
-import { getAuth} from "firebase/auth";
-import { getIdTokenResult, onAuthStateChanged, signOut } from "firebase/auth";
 
-
-
-
-// Common Dashboard Layout Component
-const DashboardLayout = ({ children, userType }) => {
-   const [loading, setLoading] = useState(true);
-   useEffect(() => {
-    // Simulate data fetching
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-  }, []);
   
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [userRoles, setUserRoles] = useState([]);
-  const [userData, setUserData] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const navigate = useNavigate();
 
-  const auth = getAuth();
+  // Check for browser support of Web Speech API
+  const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window;
 
-
-
-
-
-  useEffect(() => {
-    const fetchUserRoles = async (user) => {
-      if (user) {
-        try {
-          const tokenResult = await getIdTokenResult(user);
-          setUserRoles(tokenResult.claims.role || []);
-        } catch (error) {
-          console.error("Error fetching user roles:", error);
-        }
-      }
+  const startVoiceRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const isSpeechRecognitionSupported = !!SpeechRecognition;
+  
+    if (!isSpeechRecognitionSupported) {
+      alert('Speech recognition is not supported in this browser.');
+      return;
+    }
+  
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+  
+    recognitionRef.current.onstart = () => {
+      setIsListening(true);
     };
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      fetchUserRoles(user);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-   // Fetch user data from Firestore
-   useEffect(() => {
-    const fetchUserData = async () => {
-      const user = auth.currentUser; // Get current logged-in user
-      if (!user) return;
-
-      const userDocRef = doc(db, 'users', user.uid); // Reference to user document
-      try {
-        const userSnap = await getDoc(userDocRef);
-        if (userSnap.exists()) {
-          setUserData(userSnap.data());
-        } else {
-          console.log('No user data found');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-      setLoading(false);
+  
+    recognitionRef.current.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.trim();
+      setVoiceMessage(transcript);
+      // processVoiceCommand(transcript); // Uncomment if you have this function
     };
-
-    fetchUserData();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      if (auth.currentUser) {
-        await signOut(auth);
-        console.log("User logged out successfully");
   
-        // Clear stored auth state
-        setUserData(null);
-        localStorage.removeItem("auth");
-        localStorage.removeItem("role");
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
   
-        // Redirect after logout
-        window.location.href = "/login";  // Ensures full reload
-      } else {
-        console.warn("No user is currently logged in.");
+    recognitionRef.current.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+      alert('An error occurred during speech recognition: ' + event.error);
+    };
+  
+    recognitionRef.current.start();
+  };
+
+  const processVoiceCommand = (command) => {
+    const lowercaseCommand = command.toLowerCase();
+    let action = '';
+
+    // Enhanced Voice Command Logic
+    if (lowercaseCommand.includes('book ticket')) {
+      action = 'Booking ticket';
+      // Automatically select first available event
+      if (events.length > 0) {
+        addToCart(events[0]);
       }
-    } catch (error) {
-      console.error("Logout Error:", error.message);
+    } else if (lowercaseCommand.includes('select seat')) {
+      action = 'Selecting seat';
+      // Open seat selection for first event
+      if (events.length > 0) {
+        setSelectedEvent(events[0]);
+      }
+    } else if (lowercaseCommand.includes('show events')) {
+      action = 'Displaying available events';
+      // Could trigger a modal or scroll to events list
+    } else if (lowercaseCommand.includes('cancel booking')) {
+      action = 'Cancelling current booking';
+      setCart([]);
+    } else if (lowercaseCommand.includes('checkout')) {
+      action = 'Proceeding to checkout';
+      proceedToCheckout();
+    } else {
+      action = 'Unrecognized command';
+    }
+
+    // Update action history
+    setActionHistory(prev => [
+      { id: Date.now(), text: `${action}: "${command}"` },
+      ...prev
+    ]);
+  };
+
+  const sendVoiceMessage = () => {
+    if (voiceMessage.trim()) {
+      processVoiceCommand(voiceMessage);
+      setVoiceMessage('');
     }
   };
-  
 
+  const addToCart = (event) => {
+    const existingCartItem = cart.find(item => item.id === event.id);
 
-  const userMenu = [
-    { icon: <User size={20} />, label: 'My Profile', path:'/profile' },
-    { icon: <Ticket size={20} />, label: 'My Bookings' },
-    { icon: <Clock size={20} />, label: 'Travel History' },
-    { icon: <CreditCard size={20} />, label: 'Payment Methods' },
-    { icon: <Settings size={20} />, label: 'Settings' },
-    {icon: <LogOut size={20} />, label:'Log Out', onClick: handleLogout }
+    if (existingCartItem) {
+      setCart(cart.map(item =>
+        item.id === event.id
+          ? { ...item, quantity: Math.min(item.quantity + 1, event.availableSeats) }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...event, quantity: 1 }]);
+    }
 
-  ];
+    setActionHistory(prev => [
+      { id: Date.now(), text: `Added ${event.name} to cart` },
+      ...prev
+    ]);
+  };
 
-  const adminMenu = [
-    { icon: <BarChart size={20} />, label: 'Dashboard' },
-    { icon: <Bus size={20} />, label: 'Manage Routes' },
-    { icon: <Users size={20} />, label: 'Customers' },
-    { icon: <Ticket size={20} />, label: 'Bookings' },
-    { icon: <TrendingUp size={20} />, label: 'Analytics' },
-    { icon: <Settings size={20} />, label: 'Settings' },
-    {icon: <LogOut size={20} />, label:'Log Out', onClick: handleLogout }
-  ];
+  const removeFromCart = (eventId) => {
+    setCart(cart.filter(item => item.id !== eventId));
 
-  const menuItems = userType === 'admin' ? adminMenu : userMenu;
+    setActionHistory(prev => [
+      { id: Date.now(), text: `Removed event from cart` },
+      ...prev
+    ]);
+  };
+
+  const proceedToCheckout = () => {
+    if (cart.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+
+    const totalPrice = cart.reduce((total, item) =>
+      total + (item.price * item.quantity), 0
+    );
+
+    setActionHistory(prev => [
+      {
+        id: Date.now(),
+        text: `Checkout initiated. Total: $${totalPrice.toFixed(2)}`
+      },
+      ...prev
+    ]);
+
+    // In a real app, this would redirect to a checkout page
+    alert(`Proceeding to checkout. Total: $${totalPrice.toFixed(2)}`);
+  };
 
   return (
-     <div className=" ">
-            {loading ? (
-            <Loader />
-          ) : (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-black text-white transition-all duration-300`}>
-        <div className="p-4">
-          <h2 className={`text-xl font-bold ${!isSidebarOpen && 'hidden'}`}>
-            {userType === 'admin' ? 'Admin Panel' : 'Nava-'}
-          </h2>
+    <div className="max-w-3xl mx-auto mb-4 p-4 bg-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-bold mb-4 text-center text-blue-600">
+        Accessible Ticket Booking
+      </h2>
+      <div className=' max-h-[85vh] overflow-y-auto '>
+        {/* Voice Recognition Section */}
+        <div className="mb-4">
+
+          <div className="flex items-center space-x-2 justify-center my-10">
+            {/* Waveform Animation (visible when listening) */}
+           {isListening && (
+        <div className="absolute inset-0 flex items-center justify-center">
+         <Lottie animationData={waveformAnimation} loop={true} style={{ width: 400, height: 400 }} />
         </div>
-        <nav className="mt-8">
-        {menuItems.map((item, index) => (
-        <div
-          key={index}
-          className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white cursor-pointer"
-          onClick={() => item.path && navigate(item.path)} // Navigate on click if a path exists
-        >
-          {item.icon}
-          {isSidebarOpen && (
-            <span>{item.label}</span>
+      )}
+            <button
+              onClick={startVoiceRecognition}
+              disabled={!isSpeechRecognitionSupported}
+              className={`p-2 rounded-full size-[30vh] ${isListening
+                ? 'bg-red-500 text-white'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+                } transition-colors`}
+              aria-label="Start Voice Recognition"
+            >
+              <FaMicrophone className="w-20 h-20 text-center align-middle" />
+            </button>
+          </div>
+          <div className="flex items-center space-x-2">
+
+
+            <input
+              type="text"
+              value={voiceMessage}
+              onChange={(e) => setVoiceMessage(e.target.value)}
+              placeholder="Speak or type a command"
+              className="flex-grow p-2 border rounded"
+              aria-live="polite"
+            />
+
+            <button
+              onClick={sendVoiceMessage}
+              className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
+              aria-label="Send Voice Command"
+            >
+              <Send className="w-6 h-6" />
+            </button>
+          </div>
+
+          {!isSpeechRecognitionSupported && (
+            <p className="text-red-500 text-sm mt-2">
+              Voice recognition not supported in this browser
+            </p>
           )}
         </div>
-      ))}
-        </nav>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1">
-        {/* Top Navigation */}
-        <header className="bg-white shadow-sm">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center space-x-4">
-              <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-10 pr-4 py-2 border rounded-lg w-64 focus:ring-2 focus:ring-black focus:border-transparent"
-                />
-                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="relative">
-                <Bell size={20} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  3
-                </span>
-              </button>
-              <div className="flex items-center space-x-3">
-                <img
-                  // src={userData.avatar}
-                  alt="User"
-                  className="w-8 h-8 rounded-full"
-                />
-                <span className="font-medium">{userData.name}</span>
-              </div>
-            </div>
+        {/* Event Search */}
+        <div className="mb-4 flex space-x-2">
+          <div className="flex-grow relative">
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
+              placeholder="Location"
+              className="w-full pl-10 p-2 border rounded"
+            />
           </div>
-        </header>
+          <button className="bg-blue-500 text-white p-2 rounded">
+            <Calendar className="w-5 h-5" />
+          </button>
+        </div>
 
-        {/* Dashboard Content */}
-        <main className="p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-
-)}
-   </div>
-  );
-};
-
-// User Dashboard Component
-const UserDashboard = () => {
-  const upcomingTrips = [
-    {
-      id: 1,
-      from: 'New York',
-      to: 'Boston',
-      date: '2025-02-15',
-      time: '09:00 AM',
-      status: 'Confirmed',
-      ticketNo: 'TK123456'
-    },
-    // Add more trips
-  ];
-
-  const recentBookings = [
-    {
-      id: 1,
-      destination: 'Washington DC',
-      date: '2025-02-10',
-      amount: 75.00,
-      status: 'Completed'
-    },
-    // Add more bookings
-  ];
-
-  return (
-    <DashboardLayout userType= "common user">
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <button className="bg-blue-500 text-white p-6 rounded-xl hover:bg-blue-600 transition-colors">
-          <Calendar size={24} className="mb-2" />
-          <span className="block font-medium">Book Ticket</span>
-        </button>
-        <button className="bg-green-500 text-white p-6 rounded-xl hover:bg-green-600 transition-colors">
-          <Map size={24} className="mb-2" />
-          <span className="block font-medium">Track Bus</span>
-        </button>
-        <button className="bg-purple-500 text-white p-6 rounded-xl hover:bg-purple-600 transition-colors">
-          <CreditCard size={24} className="mb-2" />
-          <span className="block font-medium">Add Payment</span>
-        </button>
-        <button className="bg-orange-500 text-white p-6 rounded-xl hover:bg-orange-600 transition-colors">
-          <Clock size={24} className="mb-2" />
-          <span className="block font-medium">Travel History</span>
-        </button>
-      </div>
-
-      {/* Upcoming Trips */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-        <h2 className="text-xl font-bold mb-4">Upcoming Trips</h2>
+        {/* Event List */}
         <div className="space-y-4">
-          {upcomingTrips.map((trip) => (
-            <div key={trip.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-medium">{trip.from} → {trip.to}</div>
-                  <div className="text-sm text-gray-500">
-                    {trip.date} • {trip.time}
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    {trip.status}
-                  </span>
-                  <div className="flex space-x-2">
-                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                      <Printer size={20} />
-                    </button>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg">
-                      <Download size={20} />
-                    </button>
-                  </div>
-                </div> 
+          {events.map((event) => (
+            <div
+              key={event.id}
+              className="border rounded p-4 flex justify-between items-center"
+            >
+              <div>
+                <h3 className="font-bold">{event.name}</h3>
+                <p className="text-sm text-gray-600">
+                  {event.date} | {event.time}
+                </p>
+                <p className="text-sm text-gray-600">{event.venue}</p>
+                <p className="font-semibold">${event.price.toFixed(2)}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => removeFromCart(event.id)}
+                  className="text-red-500"
+                >
+                  <MinusCircle />
+                </button>
+                <span>{cart.find(item => item.id === event.id)?.quantity || 0}</span>
+                <button
+                  onClick={() => addToCart(event)}
+                  className="text-green-500"
+                >
+                  <PlusCircle />
+                </button>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Cart Summary */}
+        {cart.length > 0 && (
+          <div className="mt-4 border-t pt-4">
+            <h3 className="font-bold mb-2">Cart</h3>
+            {cart.map((item) => (
+              <div
+                key={item.id}
+                className="flex justify-between items-center mb-2"
+              >
+                <span>{item.name}</span>
+                <span>
+                  {item.quantity} x ${item.price.toFixed(2)}
+                </span>
+              </div>
+            ))}
+            <div className="flex justify-between font-bold mt-2">
+              <span>Total</span>
+              <span>
+                ${cart.reduce((total, item) =>
+                  total + (item.price * item.quantity), 0
+                ).toFixed(2)}
+              </span>
+            </div>
+            <button
+              onClick={proceedToCheckout}
+              className="w-full bg-blue-500 text-white p-2 rounded mt-2"
+            >
+              Proceed to Checkout
+            </button>
+          </div>
+        )}
+
+        {/* Action History */}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Recent Actions</h3>
+          <ul className="max-h-40 overflow-y-auto bg-gray-100 p-2 rounded">
+            {actionHistory.map((action) => (
+              <li
+                key={action.id}
+                className="flex items-center mb-2 p-2 bg-white rounded shadow-sm"
+              >
+                <ArrowRight className="w-4 h-4 mr-2 text-blue-500" />
+                <span className="text-sm">{action.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
       </div>
 
-      {/* Recent Bookings */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-4">Recent Bookings</h2>
-        <table className="w-full">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="pb-3">Destination</th>
-              <th className="pb-3">Date</th>
-              <th className="pb-3">Amount</th>
-              <th className="pb-3">Status</th>
-              <th className="pb-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentBookings.map((booking) => (
-              <tr key={booking.id} className="border-b">
-                <td className="py-3">{booking.destination}</td>
-                <td>{booking.date}</td>
-                <td>${booking.amount}</td>
-                <td>
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    {booking.status}
-                  </span>
-                </td>
-                <td>
-                  <button className="text-blue-500 hover:text-blue-700">
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
-// Admin Dashboard Component
-const AdminDashboard = () => {
-  const statistics = [
-    { label: 'Total Bookings', value: '1,234', trend: '+12%', icon: <Ticket size={24} /> },
-    { label: 'Active Users', value: '856', trend: '+8%', icon: <Users size={24} /> },
-    { label: 'Revenue', value: '$12,345', trend: '+15%', icon: <TrendingUp size={24} /> },
-    { label: 'Bus Routes', value: '45', trend: '+5%', icon: <Bus size={24} /> }
-  ];
-
-  const recentBookings = [
-    {
-      id: 1,
-      customer: 'Jane Smith',
-      route: 'NY to Boston',
-      date: '2025-02-11',
-      amount: 45.00,
-      status: 'Confirmed'
-    },
-    // Add more bookings
-  ];
-
-  return (
-    <DashboardLayout userType="admin">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {statistics.map((stat, index) => (
-          <div key={index} className="bg-white p-6 rounded-xl shadow-sm">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-500 mb-1">{stat.label}</p>
-                <h3 className="text-2xl font-bold">{stat.value}</h3>
-              </div>
-              <div className={`p-3 rounded-lg ${index === 0 ? 'bg-blue-100' : index === 1 ? 'bg-green-100' : index === 2 ? 'bg-purple-100' : 'bg-orange-100'}`}>
-                {stat.icon}
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-green-500 mr-2">{stat.trend}</span>
-              <span className="text-gray-500">vs last month</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="font-bold mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-between">
-              <span>Add New Route</span>
-              <ChevronRight size={20} />
-            </button>
-            <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-between">
-              <span>Manage Schedules</span>
-              <ChevronRight size={20} />
-            </button>
-            <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-between">
-              <span>View Reports</span>
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="font-bold mb-4">System Status</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-2">
-              <span>Booking System</span>
-              <CheckCircle className="text-green-500" size={20} />
-            </div>
-            <div className="flex items-center justify-between p-2">
-              <span>Payment Gateway</span>
-              <CheckCircle className="text-green-500" size={20} />
-            </div>
-            <div className="flex items-center justify-between p-2">
-              <span>GPS Tracking</span>
-              <AlertTriangle className="text-yellow-500" size={20} />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="font-bold mb-4">Recent Notifications</h3>
-          <div className="space-y-3">
-            <div className="p-2 text-sm">
-              <p className="font-medium">System Update Scheduled</p>
-              <p className="text-gray-500">Maintenance at 2:00 AM EST</p>
-            </div>
-            <div className="p-2 text-sm">
-              <p className="font-medium">New Route Added</p>
-              <p className="text-gray-500">NY to Philadelphia route is now active</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Bookings Table */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Recent Bookings</h2>
-          <div className="flex space-x-2">
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">
-              <Filter size={20} />
-            </button>
-            <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">
-              <Download size={20} />
-            </button>
-          </div>
-        </div>
-        <table className="w-full">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="pb-3">Customer</th>
-              <th className="pb-3">Route</th>
-              <th className="pb-3">Date</th>
-              <th className="pb-3">Amount</th>
-              <th className="pb-3">Status</th>
-              <th className="pb-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentBookings.map((booking) => (
-              <tr key={booking.id} className="border-b">
-                <td className="py-3">{booking.customer}</td>
-                <td>{booking.route}</td>
-                <td>{booking.date}</td>
-                <td>${booking.amount}</td>
-                <td>
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    {booking.status}
-                  </span>
-                </td>
-                <td>
-                  <button className="text-blue-500 hover:text-blue-700">
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </DashboardLayout>
-  );
-};
-
-export { UserDashboard, AdminDashboard };
+export default AccessibleTicketBooking;

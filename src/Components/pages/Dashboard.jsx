@@ -6,6 +6,7 @@ import { getDoc } from "firebase/firestore";
 import { getIdTokenResult, signOut } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 //Displaying Admin dashboards
 import FleetManagement from "../search/FleetManagement";
@@ -16,6 +17,9 @@ import Payment from "./DashboardAssets/PaymentDashboard";
 import CustomerManagement from "./DashboardAssets/CustomerDashboard";
 import DriverManagement from "./DashboardAssets/DriverManagament";
 import ReportsLogsDashboard from "./DashboardAssets/ReportsLogs";
+import DashboardOld from "./DashboardOld"
+import OverviewAdmin from "./OverviewAdmin";
+import OverviewUser from "./OverviewUser"
 
 // Displaying Common user dashboards
 import Overview from "./DashboardAssets/Overview";
@@ -56,6 +60,13 @@ const Dashboard = () => {
   const [adminData, setAdminData] = useState(null);
   const [activeTab, setActiveTab] = useState("welcome");
   const navigate = useNavigate();
+
+
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
   // Fetch user data from Firestore
   useEffect(() => {
@@ -228,19 +239,19 @@ const Dashboard = () => {
         case "payment":
           return <Payment />;
         case "customer":
-          return <CustomerManagement />;
+          return <OverviewAdmin />;
         case "report":
-          return <ReportsLogsDashboard />;
-        
+          return <DashboardOld />;
+
         default:
-          return <Welcome />;
+          return <OverviewAdmin />;
       }
     }
     // Regular user role will have access to limited tabs
     else if (userData.role === "common user") {
       switch (activeTab) {
         case "overview":
-          return <Overview />;
+          return <OverviewUser />;
         case "my-bookings":
           return <MyBookings />;
         case "support":
@@ -263,117 +274,136 @@ const Dashboard = () => {
   return (
     <div className="w-full h-screen bg-gray-100 flex overflow-hidden" id="step1">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md h-full overflow-y-auto  scrollbar-thin scrollbar-thumb-black scrollbar-track-white">
+      <div
+        className={`relative transition-all duration-300 ease-in-out 
+        ${isCollapsed ? 'w-20' : 'w-64'} 
+        bg-white shadow-md h-full overflow-hidden`}
+      >
+        {/* Collapse/Expand Button */}
+        <button
+          onClick={toggleSidebar}
+          className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition"
+        >
+          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+        </button>
+
         {/* Profile Section */}
         <div className="bg-gradient-to-r from-gray-300 to-gray-200 p-4">
           <div className="flex flex-col items-center">
             <div className="relative">
-              <img src={userData.avatar} alt=""
+              <img
+                src={userData.avatar}
+                alt=""
                 className="w-16 h-16 rounded-full border-2 border-white"
               />
               <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 rounded-full border-2 border-white"></div>
             </div>
-            <div className="mt-2 text-center">
-              <h3 className="text-gray-800 font-medium">{userData.name}</h3>
-              <p className="text-gray-500 text-sm">{userData.role}</p>
-            </div>
+
+            {!isCollapsed && (
+              <div className="mt-2 text-center">
+                <h3 className="text-gray-800 font-medium">{userData.name}</h3>
+                <p className="text-gray-500 text-sm">{userData.role}</p>
+              </div>
+            )}
           </div>
 
-          <div className="mt-6 flex justify-around cursor-pointer">
-            <div
-              className="flex flex-col items-center "
-              onClick={() => navigate("/profile")}
-            >
-              <svg
-                className="w-6 h-6 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {!isCollapsed && (
+            <div className="mt-6 flex justify-around cursor-pointer">
+              <div
+                className="flex flex-col items-center"
+                onClick={() => navigate("/profile")}
               >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                <span className="text-xs text-gray-600 mt-1">Profile</span>
+              </div>
 
-              
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              <span className="text-xs text-gray-600 mt-1">Profile</span>
+              <div className="flex flex-col items-center cursor-pointer">
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-xs text-gray-600 mt-1">Gallery</span>
+              </div>
+
+              <div className="flex flex-col items-center cursor-pointer">
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+                <span className="text-xs text-gray-600 mt-1">Notifications</span>
+              </div>
             </div>
-            <div className="flex flex-col items-center cursor-pointer">
-              <svg
-                className="w-6 h-6 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span
-                className="text-xs text-gray-600 mt-1"
-                onClick={handleFetchData}
-              >
-                Gallery
-              </span>
-            </div>
-            <div className="flex flex-col items-center cursor-pointer">
-              <svg
-                className="w-6 h-6 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-              <span className="text-xs text-gray-600 mt-1">Notifications</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Project Selection */}
-        <div className="px-4 py-3">
-          <div className="bg-gray-200 rounded-md p-3 flex items-center justify-between">
-            <span className="text-gray-700">Select Car</span>
-            <svg
-              className="w-5 h-5 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+        {!isCollapsed && (
+          <div className="px-4 py-3">
+            <div className="bg-gray-200 rounded-md p-3 flex items-center justify-between">
+              <span className="text-gray-700">Select Car</span>
+              <svg
+                className="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Menu Items */}
         <nav className="snap-y overflow-hidden">
-          <div className="px-4 py-3 flex items-center space-x-3 text-gray-700 font-medium">
-            <span>Home</span>
+          <div
+            className={`px-4 py-3 flex items-center space-x-3 
+            ${isCollapsed ? 'justify-center' : 'text-gray-700 font-medium'}`}
+          >
+            {isCollapsed ? <span className="text-xs">Menu</span> : <span>Home</span>}
           </div>
 
+          {/* Dashboard Item */}
           <div
-            className={`px-4 py-3 flex items-center space-x-3 border-r-4 font-medium 
-        ${
-          activeTab === "dashboard"
-            ? "bg-gray-100 border-gray-800 text-gray-800"
-            : "bg-gray-200 border-transparent text-gray-600"
-        }`}
+            className={`px-4 py-3 flex items-center space-x-3 border-r-4 
+            ${activeTab === "dashboard"
+                ? "bg-gray-100 border-gray-800 text-gray-800"
+                : "bg-gray-200 border-transparent text-gray-600"
+              } ${isCollapsed ? 'justify-center' : ''}`}
             onClick={() => setActiveTab("dashboard")}
             title="Dashboard"
           >
@@ -392,18 +422,18 @@ const Dashboard = () => {
                 />
               </svg>
             </div>
-            <span>Dashboard</span>
-            <div className="w-2 h-2 rounded-full bg-gray-800 ml-auto"></div>
+            {!isCollapsed && <span>Dashboard</span>}
+            {!isCollapsed && <div className="w-2 h-2 rounded-full bg-gray-800 ml-auto"></div>}
           </div>
 
           {/* Admin menu items */}
-
           {userData.role === "admin" && (
             <>
               {adminTabs.map((tab) => (
                 <div
                   key={tab.id}
-                  className="px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition  "
+                  className={`px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition 
+                  ${isCollapsed ? 'justify-center' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                   title={tab.label}
                 >
@@ -422,17 +452,19 @@ const Dashboard = () => {
                       />
                     </svg>
                   </div>
-                  <span>{tab.label}</span>
+                  {!isCollapsed && <span>{tab.label}</span>}
                 </div>
               ))}
             </>
           )}
 
+          {/* User menu items */}
           {userData.role === "common user" &&
             userTabs.map((tab) => (
               <div
                 key={tab.id}
-                className="px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition  "
+                className={`px-4 py-3 flex items-center space-x-3 text-gray-500 cursor-pointer hover:bg-gray-100 transition 
+                ${isCollapsed ? 'justify-center' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
                 title={tab.label}
               >
@@ -451,11 +483,9 @@ const Dashboard = () => {
                     />
                   </svg>
                 </div>
-                <span>{tab.label}</span>
+                {!isCollapsed && <span>{tab.label}</span>}
               </div>
             ))}
-
-         
         </nav>
       </div>
 

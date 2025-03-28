@@ -4,15 +4,21 @@
   "description": "Email sending service for Travel Rwanda bookings",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node --no-deprecation index.js",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.0",
+    "ajv": "^8.17.1",
     "firebase-admin": "^12.7.0",
-    "@sendgrid/mail": "^8.1.0"
+    "punycode": "^2.3.1",
+    "punycode.js": "^2.3.1",
+    "qrcode": "^1.5.4",
+    "uri-js": "^4.4.1",
+    "whatwg-url": "^14.2.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "@eslint/js": "^8.57.0"
+    "@eslint/js": "^8.57.0",
+    "eslint": "^8.57.0"
   }
 }

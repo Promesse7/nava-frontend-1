@@ -44,6 +44,7 @@ import { onSnapshot } from "firebase/firestore";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import BookRide from "./BookRide";
+import TicketView from "../../features/TicketView";
 import { ArrowLeft, Plus } from "lucide-react";
 
 const MyBookings = () => {
@@ -70,6 +71,7 @@ const MyBookings = () => {
   const [paymentStep, setPaymentStep] = useState(1);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [ShowReceiptModal, setShowReceiptModal] = useState(false);
 
   // Add these functions to your component
   const openPaymentModal = (trip) => {
@@ -282,6 +284,11 @@ const MyBookings = () => {
     setRating(trip.rating || 0);
     setReview(trip.review || "");
     setShowRatingModal(true);
+  };
+
+  const openReceiptModal = (trip) => {
+    setSelectedTrip(trip);
+    setShowReceiptModal(true);
   };
 
   const submitRating = async () => {
@@ -837,7 +844,8 @@ const MyBookings = () => {
                                 className={`border-t border-gray-100 pt-4 mt-4 flex justify-between ${!trip.reviewed ? "mt-2" : ""
                                   }`}
                               >
-                                <button className="px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex items-center">
+                                <button className="px-4 py-2 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex items-center "
+                                  onClick={() => openReceiptModal(trip)}>
                                   <FaFileAlt className="mr-2" /> Receipt
                                 </button>
                                 <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors flex items-center">
@@ -964,6 +972,12 @@ const MyBookings = () => {
                   </div>
                 </motion.div>
               </div>
+            )}
+
+            {/* Ticket View Modal */}
+
+            {ShowReceiptModal && (
+               <TicketView />
             )}
 
             <Toaster />

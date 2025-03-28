@@ -396,18 +396,18 @@ const FleetManagement = () => {
           Fuel Efficiency
         </button>
       </div>
-
+    
       {/* Content based on active tab */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 overflow-auto">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 max-h-[60vh] overflow-auto">
         {/* Available Cars */}
         {activeTab === "available" && (
-          <div>
+          <div className="overflow-y-auto max-h-screen">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
               <Car className="mr-2 text-green-600" />
               Available Cars
             </h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+            <div className="">
+              <table className="min-w-full divide-y  divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -430,7 +430,7 @@ const FleetManagement = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
                   {filterData(fleetData.availableCars).map((car) => (
                     <tr key={car.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
