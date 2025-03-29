@@ -9,6 +9,7 @@ import BusList from './Components/search/BusList';
 import FleetManagement from './Components/search/FleetManagement';
 import TripTracker from './Components/pages/DashboardAssets/TripTracker';
 import TourGuide from './Components/pages/TourGuide';
+import AccessibleTicketBooking from './Components/pages/DashboardOld';
 
 function App() {
   return (
@@ -23,6 +24,13 @@ function App() {
             path="/dashboard"
             element={
               <Dashboard />
+            }
+          />
+
+          <Route
+            path="/disabled"
+            element={
+              <AccessibleTicketBooking />
             }
           />
 

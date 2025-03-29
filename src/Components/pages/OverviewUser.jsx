@@ -22,7 +22,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import BusCompaniesDisplay from './BusCompaniesDisplay';
 import { getAvailableRoutes } from '../../services/fleetService';
-
+import AccessibleTicketBooking from './DashboardOld';
 
 const Dashboard = () => {
     // State for ticket booking form
@@ -196,20 +196,31 @@ const Dashboard = () => {
 
     return (
         <>
-            <div className={"p-6 fixed transition-all duration-300 ease-in-out flex-shrink-0  max-w-[80%] bg-neutral-100 shadow-md h-full overflow-hidden"}>
+            <div className={"p-6 fixed transition-all duration-300 ease-in-out flex-shrink-0 sm:max-w-[90vw] lg:max-w-[82vw] bg-neutral-100 shadow-md h-full overflow-hidden"}>
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-wrap justify-between items-center mb-6 p-4">
+                    {/* Logo & Title */}
                     <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
                             <span className="text-xl font-bold text-white">T</span>
                         </div>
-                        <h1 className="text-2xl font-bold">Travel Rwanda</h1>
+                        <h1 className="text-lg md:text-2xl font-bold">Travel Rwanda</h1>
                     </div>
-                    <div className="flex space-x-4">
-                        <button className="bg-gray-500 text-white px-4 py-2 rounded-lg" onClick={navigate()}>Talk to me</button>
-                        <button className="bg-gray-500 text-white px-4 py-2 rounded-lg">Settings</button>
+
+                    {/* Buttons */}
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                        <button
+                            className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm md:text-base"
+                            onClick={() => navigate("/disabled")}
+                        >
+                            Talk to me
+                        </button>
+                        <button className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm md:text-base">
+                            Settings
+                        </button>
                     </div>
                 </div>
+
 
                 <div className="max-h-[82vh] max-w-[100%] pr-6 overflow-y-auto overflow-x-hidden">
                     {/* Account Functions Navigation */}
@@ -317,7 +328,7 @@ const Dashboard = () => {
                                 <p className="text-green-600 text-sm">+20% this month</p>
                             </div>
                             <div className="bg-neutral-200 p-4 rounded-lg">
-                                <h2 className="text-sm text-neutral-600">Tickets Sold</h2>
+                                <h2 className="text-sm text-neutral-600">Tickets Bought</h2>
                                 <p className="text-2xl font-bold">{stats.ticketsSold}</p>
                                 <p className="text-red-600 text-sm">-5% this month</p>
                             </div>
@@ -333,7 +344,7 @@ const Dashboard = () => {
                         {/* Revenue Chart */}
                         <div className="col-span-2 bg-neutral-200 p-6 rounded-lg">
                             <h2 className="text-lg font-bold mb-4">Revenue Trends</h2>
-                            <div className="flex space-x-2 h-40">
+                            <div className="flex space-x-2 h-35">
                                 {revenueData.map((value, index) => (
                                     <div
                                         key={index}

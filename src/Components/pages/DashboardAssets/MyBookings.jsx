@@ -390,7 +390,7 @@ const MyBookings = () => {
       {!showBookARide ? (
         <>
           <motion.div
-            className="p-2 md:p-6 space-y-4 "
+            className="p-2 md:p-6 space-y-4 sm:overflow-y-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
