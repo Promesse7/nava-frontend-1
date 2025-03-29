@@ -74,12 +74,12 @@
             <p>Your booking is confirmed! We're excited to have you join us on your upcoming journey.</p>
 
             <!-- Booking Details -->
-            <div class="booking-details" style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
-                <h3 style="color: #1a3c34; font-size: 20px; margin: 0 0 15px;">Booking Details</h3>
+            <div class="booking-details" style="background-color: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px; max-width: 60vw;">
+                <h3 style="color: #1a3c34; font-size: 20px; margin: 0 0 15px; text-align: center;">Booking Details</h3>
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="5">
                     <tr>
                         <td style="color: #333333; font-size: 16px; width: 40%;"><strong>Booking Number:</strong></td>
-                        <td style="color: #555555; font-size: 16px;">{{bookingData.bookingNumber}}</td>
+                        <td style="color: #555555; font-size: 16px;">{{bookingNumber}}</td>
                     </tr>
                     <tr>
                         <td style="color: #333333; font-size: 16px;"><strong>Route:</strong></td>
@@ -116,7 +116,7 @@
                 <div style="margin-top: 20px; text-align: center;">
                     <p style="color: #333333; font-size: 16px; margin: 0 0 10px;"><strong>Your QR Code:</strong></p>
                  <img src="https://res.cloudinary.com/dlhu0vkqm/image/upload/v1743171279/bhxwaedzojg6xp6wzr3m.png" alt="">
-                    <p style="color: #666666; font-size: 14px; margin: 10px 0 0;">Scan this QR code at the boarding point to validate your ticket.</p>
+                    <p style="color: #666666; font-size: 20px; margin: 10px 0 0;">Scan this QR code at the boarding point to validate your ticket.</p>
                 </div>
             </div>
 
@@ -131,7 +131,7 @@
                 </ul>
             </div>
 
-            <p>Thank you for choosing Travel Rwanda!</p>
+            <p style="color: #555555; font-size: 20px; margin: 20px 0 0; text-align: center;"> <em>Thank you for choosing Travel Rwanda!</em></p>
         </div>
 
         <div class="footer">

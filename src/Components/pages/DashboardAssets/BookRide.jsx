@@ -128,11 +128,9 @@ const BookRide = () => {
 
            {isOpen && (
             <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-6 rounded shadow-lg relative">
                 <h2 className="text-xl font-semibold mb-4">Booking for {selectedCar?.name}</h2>
                 <BookingForm onClose={closeForm} />
                
-              </div>
             </div>
           )}
           

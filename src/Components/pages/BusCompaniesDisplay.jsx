@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
 import { MapPin, Clock, Star, ChevronDown, ChevronUp, Bus, Calendar } from 'lucide-react';
+import HorizonCar from '../../assets/horizon.jpg';
+import RitcoCar from '../../assets/ritco logo.jpg';
+import VirungaCar from '../../assets/virunga.jpg';
+import VolcanoCar from '../../assets/volcano.jpg';
+import YegoCar from '../../assets/yego car.jpg';
+import AlphaCar from '../../assets/alpha.jpg';
+import ExcelCar from '../../assets/excel.webp';
+import MoveCar from '../../assets/move car.jpg';
+import OmegaCar from '../../assets/omega.jpg';
+
+
+
+
+
 
 const BusCompaniesDisplay = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -13,7 +27,7 @@ const BusCompaniesDisplay = () => {
       rating: 4.8,
       trips: 200,
       yearsActive: 15,
-      logo: "https://www.google.com/imgres?q=ritco&imgurl=https%3A%2F%2Fwww.ritco.rw%2Fassets%2Fimages%2Fhome_two%2Fhero_thumb_2.png&imgrefurl=https%3A%2F%2Fwww.ritco.rw%2F&docid=m8xaAldcITi2qM&tbnid=fS4O5bCBCyDJaM&vet=12ahUKEwjl2YLMpfqKAxWKX0EAHabDD-8QM3oECGsQAA..i&w=1600&h=1067&hcb=2&ved=2ahUKEwjl2YLMpfqKAxWKX0EAHabDD-8QM3oECGsQAA",
+      logo: RitcoCar,
       fleetSize: 45,
       routes: [
         {
@@ -50,7 +64,7 @@ const BusCompaniesDisplay = () => {
       rating: 4.6,
       trips: 150,
       yearsActive: 10,
-      logo: "https://www.google.com/imgres?q=horizon%20express%20rwanda&imgurl=https%3A%2F%2Flookaside.fbsbx.com%2Flookaside%2Fcrawler%2Fmedia%2F%3Fmedia_id%3D100063774872921&imgrefurl=https%3A%2F%2Fwww.facebook.com%2Fhorizonexpressltd%2F&docid=Bf5hR-fWHVWfOM&tbnid=hJBktaugUA4aiM&vet=12ahUKEwjFusqPpvqKAxWMVUEAHa4mFiUQM3oECGsQAA..i&w=502&h=504&hcb=2&ved=2ahUKEwjFusqPpvqKAxWMVUEAHa4mFiUQM3oECGsQAA",
+      logo: HorizonCar,
       fleetSize: 35,
       routes: [
         {
@@ -67,6 +81,171 @@ const BusCompaniesDisplay = () => {
           ]
         }
       ]
+    },
+    {
+      id: 3,
+      name: "Virunga Express",
+      rating: 4.5,
+      trips: 180,
+      yearsActive: 12,
+      logo: VirungaCar,
+      fleetSize: 40,
+      routes: [
+        {
+          id: "r3",
+          from: "Rubavu",
+          to: "Kigali",
+          duration: "3h 45m",
+          stops: ["Musanze", "Nyabugogo"],
+          departureTime: ["06:30", "10:30", "14:30"],
+          price: "50,000",
+          coordinates: [
+            { lat: -1.679, lng: 29.233 }, // Rubavu
+            { lat: -1.950, lng: 30.060 } // Kigali
+          ]
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: "Alpha Express",
+      rating: 4.7,
+      trips: 160,
+      yearsActive: 9,
+      logo: AlphaCar,
+      fleetSize: 30,
+      routes: [
+        {
+          id: "r4",
+          from: "Huye",
+          to: "Kigali",
+          duration: "4h",
+          stops: ["Muhanga"],
+          departureTime: ["05:00", "08:00", "12:00"],
+          price: "48,000",
+          coordinates: [
+            { lat: -2.591, lng: 29.738 }, // Huye
+            { lat: -1.950, lng: 30.060 } // Kigali
+          ]
+        }
+      ]
+    },
+    {
+      id: 5,
+      name: "Excel",
+      rating: 4.6,
+      trips: 140,
+      yearsActive: 8,
+      logo: ExcelCar,
+      fleetSize: 25,
+      routes: [
+        {
+          id: "r5",
+          from: "Musanze",
+          to: "Kigali",
+          duration: "2h 45m",
+          stops: ["Nyirangarama"],
+          departureTime: ["06:00", "09:30", "13:00"],
+          price: "40,000",
+          coordinates: [
+            { lat: -1.500, lng: 29.633 }, // Musanze
+            { lat: -1.950, lng: 30.060 } // Kigali
+          ]
+        }
+      ]
+    },
+    {
+      id: 6,
+      name: "Volcano",
+      rating: 4.9,
+      trips: 190,
+      yearsActive: 14,
+      logo: VolcanoCar,
+      fleetSize: 50,
+      routes: [
+        {
+          id: "r6",
+          from: "Kigali",
+          to: "Gisenyi",
+          duration: "3h 15m",
+          stops: ["Nyabihu", "Musanze"],
+          departureTime: ["07:00", "11:00", "15:00"],
+          price: "55,000",
+          coordinates: [
+            { lat: -1.950, lng: 30.060 }, // Kigali
+            { lat: -1.678, lng: 29.263 } // Gisenyi
+          ]
+        }
+      ]
+    },
+    {
+      id: 7,
+      name: "Omega",
+      rating: 4.3,
+      trips: 120,
+      yearsActive: 7,
+      logo: OmegaCar,
+      fleetSize: 20,
+      routes: [
+        {
+          id: "r7",
+          from: "Nyagatare",
+          to: "Kigali",
+          duration: "5h",
+          stops: ["Kayonza"],
+          departureTime: ["06:30", "10:00", "14:00"],
+          price: "60,000",
+          coordinates: [
+            { lat: -1.320, lng: 30.320 }, // Nyagatare
+            { lat: -1.950, lng: 30.060 } // Kigali
+          ]
+        }
+      ]
+    },
+    {
+      id: 8,
+      name: "Move",
+      rating: 4.2,
+      trips: 100,
+      yearsActive: 5,
+      logo: MoveCar,
+      fleetSize: 15,
+      routes: [
+        {
+          id: "r8",
+          from: "Kigali",
+          to: "Rwamagana",
+          duration: "1h 30m",
+          stops: ["Kayonza"],
+          departureTime: ["08:00", "12:00", "16:00"],
+          price: "35,000",
+          coordinates: [
+            { lat: -1.950, lng: 30.060 }, // Kigali
+            { lat: -1.948, lng: 30.432 } // Rwamagana
+          ]
+        }
+      ]
+    },
+    {
+      id: 9,
+      name: "Yego Cabs",
+      rating: 4.8,
+      trips: 250,
+      yearsActive: 6,
+      logo: YegoCar,
+      fleetSize: 60,
+      routes: [
+        {
+          id: "r9",
+          from: "Kigali",
+          to: "Anywhere in Rwanda",
+          duration: "Varies",
+          stops: ["On-demand"],
+          departureTime: ["24/7 Service"],
+          price: "Depends on distance",
+          coordinates: []
+        }
+      ]
     }
   ];
 
@@ -79,7 +258,7 @@ const BusCompaniesDisplay = () => {
 
   // SVG Map Component with Routes
   const RouteMap = ({ routes }) => (
-    <svg className="w-full h-64" viewBox="0 0 800 400">
+    <svg className="w-full h-60" viewBox="0 0 800 400">
       {/* US Map outline placeholder */}
       <path
         d="M100,100 L700,100 L700,300 L100,300 Z"
@@ -119,20 +298,20 @@ const BusCompaniesDisplay = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-10">
       <h2 className="text-3xl font-bold mb-8">Available Bus Companies</h2>
       
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-6 max-h-[50vh] overflow-y-auto p-2">
         {busCompanies.map((company) => (
-          <div key={company.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-6">
+          <div key={company.id} className="bg-white rounded-2xl shadow-lg overflow-hidden ">
+            <div className="p-4">
               {/* Company Header */}
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <img
                     src={company.logo}
                     alt={`${company.name} logo`}
-                    className="w-16 h-16 rounded-lg object-cover"
+                    className="w-14 h-14 rounded-lg object-cover"
                   />
                   <div>
                     <h3 className="text-2xl font-bold">{company.name}</h3>

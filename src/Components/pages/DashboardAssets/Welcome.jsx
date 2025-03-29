@@ -96,7 +96,7 @@ const Welcome = ({ userName, userRole = "user" }) => {
   ${isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
     >
       {/* App Introduction Section */}
-      <div className="mb-8 overflow-hidden">
+      <div className="mb-8 overflow-hidden ">
         <div className="flex justify-between items-center mb-4">
           <h1
             className={`text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-100 transition-all duration-700 ${

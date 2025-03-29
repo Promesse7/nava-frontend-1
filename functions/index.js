@@ -71,7 +71,7 @@ async function generateQRCode(bookingData) {
       log(`Missing QR code fields: ${missingFields.join(', ')}`, 'error');
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-
+    const createdAtString = bookingData.createdAt.toDate().toLocaleString();
     // Prepare QR code data
     const qrData = JSON.stringify({
       customerName: bookingData.customerName,
@@ -126,10 +126,14 @@ async function generateQRCode(bookingData) {
 function personalizeEmailTemplate(template, bookingData, qrCodeUrl) {
   return template
     .replace("{{customerName}}", bookingData.customerName || "Valued Customer")
+    .replace("{{bookingNumber}}", bookingData.bookingNumber || "Valued Customer")
     .replace("{{route}}", bookingData.route || "Not Specified")
     .replace("{{departureDate}}", bookingData.departureDate || "Not Specified")
     .replace("{{seatNumber}}", bookingData.seatNumber || "Not Assigned")
-    .replace("{{amount}}", bookingData.amount ? `$${bookingData.amount}` : "Not Specified")
+    .replace("{{phoneNumber}}", bookingData.phoneNumber || "Not Assigned")
+    .replace("{{createdAt}}", bookingData.createdAtString || "Not Assigned")
+    .replace("{{status}}", bookingData.status || "Not Assigned")
+    .replace("{{amount}}", bookingData.amount ? `${bookingData.amount}` : "Not Specified")
     .replace(
       "{{qrCode}}",
       `

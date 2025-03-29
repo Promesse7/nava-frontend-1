@@ -6,7 +6,7 @@ import { getDoc } from "firebase/firestore";
 import { getIdTokenResult, signOut } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
 //Displaying Admin dashboards
 import FleetManagement from "../search/FleetManagement";
@@ -61,13 +61,41 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("welcome");
   const navigate = useNavigate();
 
-
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  
 
+  // Check if screen is mobile on component mount and window resize
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      // Auto-collapse sidebar on mobile
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+  
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setIsCollapsed(!isCollapsed);
+    }
+  };
   // Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
@@ -272,20 +300,41 @@ const Dashboard = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="w-full h-screen bg-gray-100 flex overflow-hidden" id="step1">
-      {/* Sidebar */}
-      <div
-        className={`relative transition-all duration-300 ease-in-out flex-shrink-0
-                ${isCollapsed ? 'w-20' : 'w-64'} 
-                bg-white shadow-md h-full overflow-hidden`}
-      >
-        {/* Collapse/Expand Button */}
+    <div className="w-full h-screen bg-gray-100 flex overflow-hidden"   >
+      {/* Mobile menu toggle button - only visible on mobile */}
+      {isMobile && (
         <button
           onClick={toggleSidebar}
-          className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition"
+          className="fixed top-4 left-4 z-20 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition"
+          aria-label="Toggle menu"
         >
-          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          <Menu className="w-6 h-6" />
         </button>
+      )}
+      
+      {/* Sidebar - with overlay for mobile */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-10 transition-opacity duration-300 
+                    ${sidebarOpen && isMobile ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => isMobile && setSidebarOpen(false)}
+      />
+      
+      {/* Sidebar */}
+      <div
+        className={`fixed md:relative z-10 transition-all duration-300 ease-in-out flex-shrink-0
+                  h-full bg-white shadow-md overflow-y-auto overflow-x-hidden
+                  ${sidebarOpen ? 'left-0' : '-left-full md:left-0'} 
+                  ${isCollapsed && !isMobile ? 'w-20' : 'w-64'}`}
+      >
+        {/* Collapse/Expand Button - only visible on desktop */}
+        {!isMobile && (
+          <button
+            onClick={toggleSidebar}
+            className="absolute top-4 right-4 z-10 bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition"
+          >
+            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
+        )}
 
         {/* Profile Section */}
         <div className="bg-gradient-to-r from-gray-300 to-gray-200 p-4">
@@ -296,19 +345,16 @@ const Dashboard = () => {
                 alt="Profile"
                 className="w-16 h-16 rounded-full border-2 border-white"
               />
-
               <div className="absolute bottom-0 right-0 w-4 h-4 bg-gray-400 rounded-full border-2 border-white"></div>
             </div>
-            {!isCollapsed && (
+            {(!isCollapsed || isMobile) && (
               <div className="mt-2 text-center">
                 <h3 className="text-gray-800 font-medium">{userData.name}</h3>
                 <p className="text-gray-500 text-sm capitalize">{userData.role}</p>
 
                 <div className="mt-6 flex justify-around cursor-pointer">
-
-
                   <div
-                    className="flex flex-col items-center "
+                    className="flex flex-col items-center"
                     onClick={() => navigate("/profile")}
                   >
                     <svg
@@ -365,7 +411,6 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
-
           </div>
         </div>
 
@@ -373,7 +418,7 @@ const Dashboard = () => {
         <nav className="mt-4">
           <div
             className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
-                        ${isCollapsed ? 'justify-center' : ''}`}
+                      ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
             onClick={() => setActiveTab("dashboard")}
           >
             <div className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded-md">
@@ -390,9 +435,10 @@ const Dashboard = () => {
                   d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                 />
               </svg>
-
             </div>
-            {!isCollapsed && <span className="text-gray-700"   onClick={() => setActiveTab("overview")}>Dashboard</span>}
+            {(!isCollapsed || isMobile) && (
+              <span className="text-gray-700" onClick={() => setActiveTab("overview")}>Dashboard</span>
+            )}
           </div>
 
           {/* Admin menu items */}
@@ -400,7 +446,7 @@ const Dashboard = () => {
             <div
               key={tab.id}
               className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
-                            ${isCollapsed ? 'justify-center' : ''}`}
+                          ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
               onClick={() => setActiveTab(tab.id)}
               title={tab.label}
             >
@@ -419,7 +465,7 @@ const Dashboard = () => {
                   />
                 </svg>
               </div>
-              {!isCollapsed && <span>{tab.label}</span>}
+              {(!isCollapsed || isMobile) && <span>{tab.label}</span>}
             </div>
           ))}
 
@@ -428,7 +474,7 @@ const Dashboard = () => {
             <div
               key={tab.id}
               className={`px-4 py-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-100 transition 
-                            ${isCollapsed ? 'justify-center' : ''}`}
+                          ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
               onClick={() => setActiveTab(tab.id)}
               title={tab.label}
             >
@@ -447,15 +493,18 @@ const Dashboard = () => {
                   />
                 </svg>
               </div>
-              {!isCollapsed && <span>{tab.label}</span>}
+              {(!isCollapsed || isMobile) && <span>{tab.label}</span>}
             </div>
           ))}
         </nav>
       </div>
 
       {/* Main Display Pane */}
-      <div className="flex-1 p-5 bg-gray-100">{renderContent()}</div>
+      <div className="flex-1 p-5 md:p-6 bg-gray-100 md:ml-0 mt-14 md:mt-0">
+        {renderContent()}
+      </div>
     </div>
+
   );
 };
 
