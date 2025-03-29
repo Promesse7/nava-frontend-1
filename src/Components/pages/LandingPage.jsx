@@ -28,19 +28,20 @@ const LandingPage = () => {
       description: "Secure payment and instant ticket confirmation."
     }
   ];
-
+ 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-gray-100 sm:flex sm:flex-col md:flex-row md:justify-center md:items-center">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-gray-100 md:flex md:flex-col  md:justify-center md:items-center">
+
   
       {/* Header */}
-      <header className="p-6 flex justify-between items-center">
+      <header className="p-6 flex justify-between items-center ">
         <div className="flex items-center space-x-3">
           <Car className="w-10 h-10 text-gray-400" />
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 text-center md:text-left">   Travel Rwanda </h1>
 
 
         </div>
-        <nav className="space-x-6">
+        <nav className="space-x-6 ml-[20vw]">
           <a href="#" className="text-gray-700 hover:text-black transition">Home</a>
           <a href="#" className="text-gray-700 hover:text-black transition">Destinations</a>
           <a href="#" className="text-gray-700 hover:text-black transition">Support</a>

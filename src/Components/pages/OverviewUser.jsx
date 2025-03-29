@@ -32,7 +32,7 @@ const Dashboard = () => {
     const [destination, setDestination] = useState('');
     const [date, setDate] = useState('');
     const [tickets, setTickets] = useState(1);
-    const navigate = useNavigate;
+    const navigate = useNavigate();
 
     // Mock data for stats and charts
     const stats = {
