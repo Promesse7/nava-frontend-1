@@ -124,47 +124,14 @@ const Dashboard = () => {
   const activeTabName = tabs.find(tab => tab.id === activeTab)?.label || "Dashboard";
 
   return (
-    <div className="h-screen rounded-lg bg-gray-100 flex flex-col overflow-hidden">
+    <div className="h-screen rounded-lg bg-gray-900 flex flex-col overflow-hidden text-white">
     
-      
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden flex">
-        {/* Content */}
-        <main className="flex-1 overflow-y-hidden">
-          <div className="p-2 md:p-4 ">
-            <div className="bg-gray-800 rounded-lg shadow-sm p-2 md:p-4 min-h-[calc(100vh-6rem)] ">
-              {renderContent()}
-            </div>
-          </div>
-        </main>
-      </div>
-      
-      {/* Bottom Navigation Bar (modern style from the image) */}
-      <nav className="bg-gray-800 shadow-lg py-2 px-4 rounded-t-3xl fixed bottom-0 left-0 right-0 z-10">
-        <div className="max-w-full mx-auto bg-gray-100 rounded-full  py-2 px-4">
-          <div className="flex justify-around items-center">
-            {tabs.slice(0, 5).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
-                  activeTab === tab.id ? 'text-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
-                aria-label={tab.label}
-              >
-                <div className="w-6 h-6 flex items-center justify-center">
-                  {tab.icon}
-                </div>
-                {activeTab === tab.id && (
-                  <span className="text-xs mt-1 font-medium">{tab.label}</span>
-                )}
-              </button>
-            ))}
-            
-            {/* Profile button at the end */}
+        {/* Top Navigation Bar (Profile) */}
+        <div className="p-4 flex justify-start items-center">
+            {/* Profile button at the top */}
             <div className="relative group">
               <button 
-                className="flex flex-col items-center justify-center p-2 rounded-full text-gray-500 hover:text-gray-700"
+                className="flex flex-col items-center justify-center p-2 rounded-full text-gray-300 hover:text-gray-100"
                 aria-label="Profile menu"
               >
                 <div className="w-6 h-6 flex items-center justify-center">
@@ -173,7 +140,7 @@ const Dashboard = () => {
               </button>
               
               {/* Popup menu */}
-              <div className="absolute right-0 bottom-full mb-2 w-40 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
+              <div className="absolute left-0 top-full mt-2 w-40 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
                 <button 
                   onClick={() => navigate("/profile")}
                   className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -196,6 +163,41 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
+          </div>
+      
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden flex">
+        {/* Content */}
+        <main className="flex-1 overflow-y-hidden">
+          <div className="p-2 md:p-4 ">
+            <div className="bg-gray-800 rounded-lg shadow-sm p-2 md:p-4 min-h-[calc(100vh-6rem)] text-white">
+              {renderContent()}
+            </div>
+          </div>
+        </main>
+      </div>
+      
+      {/* Bottom Navigation Bar (modern style from the image) */}
+      <nav className="bg-gray-800 shadow-lg py-2 px-4 rounded-t-3xl fixed bottom-0 left-0 right-0 z-10 text-white">
+        <div className="max-w-full mx-auto bg-gray-900 rounded-full  py-2 px-4">
+          <div className="flex justify-around items-center">
+            {tabs.slice(0, 5).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
+                  activeTab === tab.id ? 'text-blue-600 bg-white shadow-sm' : 'text-gray-300 hover:text-gray-100'
+                }`}
+                aria-label={tab.label}
+              >
+                <div className="w-6 h-6 flex items-center justify-center">
+                  {React.cloneElement(tab.icon, { className: activeTab === tab.id ? 'text-blue-600' : 'text-gray-300' })}
+                </div>
+                {activeTab === tab.id && (
+                  <span className="text-xs mt-1 font-medium">{tab.label}</span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </nav>

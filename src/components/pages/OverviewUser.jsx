@@ -1,3 +1,4 @@
+jsx
 // src/components/Dashboard.js
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -19,7 +20,6 @@ import {
     ChevronLeft,
     ChevronRight
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import BusCompaniesDisplay from './BusCompaniesDisplay';
 import { getAvailableRoutes } from '../../services/fleetService';
@@ -134,35 +134,6 @@ const Dashboard = () => {
 
     const scrollRef = useRef(null);
 
-  // Animation variants for cards
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' },
-    }),
-  };
-
-  // Animation variants for buttons
-  const buttonVariants = {
-    hover: { scale: 1.05, transition: { duration: 0.2 } },
-    tap: { scale: 0.95, transition: { duration: 0.1 } },
-  };
-
-    // Function to scroll left
-    const scrollLeft = () => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-        }
-    };
-
-    // Function to scroll right
-    const scrollRight = () => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-        }
-    };
 
     useEffect(() => {
         const loadRoutes = async () => {
@@ -192,123 +163,71 @@ const Dashboard = () => {
 
     return (
         <>
-              <motion.div
-      className="p-6 fixed transition-all duration-300 ease-in-out flex-shrink-0 sm:max-w-[95vw] lg:max-w-[95vw] bg-transparent shadow-xl h-[80vh]  overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+              <div
+      className="p-6  flex-shrink-0 sm:max-w-[95vw] lg:max-w-[95vw] bg-gray-900 h-[80vh]  overflow-hidden text-white"
     >
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-md">
+      <div className="flex flex-wrap justify-between items-center mb-6 p-4 bg-gray-800 rounded-xl shadow-md">
         {/* Logo & Title */}
         <div className="flex items-center space-x-4">
-          <motion.div
-            className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.3 }}
+          <div
+            className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center"
           >
             <span className="text-xl font-bold text-white">T</span>
-          </motion.div>
-          <h1 className="text-lg md:text-2xl font-bold text-gray-800">Travel Rwanda</h1>
+          </div>
+          <h1 className="text-lg md:text-2xl font-bold text-gray-100">Travel Rwanda</h1>
         </div>
 
         {/* Buttons */}
         <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-          <motion.button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm md:text-base shadow hover:bg-blue-600 transition"
+          <button
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm md:text-base shadow hover:bg-gray-600"
             onClick={() => navigate("/disabled")}
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
           >
             Talk to me
-          </motion.button>
-          <motion.button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm md:text-base shadow hover:bg-blue-600 transition"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
+          </button>
+          <button
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm md:text-base shadow hover:bg-gray-600"
           >
             Settings
-          </motion.button>
+          </button>
         </div>
       </div>
 
       <div className="max-h-[82vh] max-w-[100%] pr-6 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-gray-800">
         {/* Account Functions Navigation */}
-        <div className="flex items-center gap-2 mb-6">
-          {/* Left Arrow Button */}
-          <motion.button
-            onClick={scrollLeft}
-            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition shadow"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </motion.button>
-
-          {/* Account Function Buttons (Scrollable) */}
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-hidden py-2 scrollbar-hide scroll-smooth w-full"
-            style={{ scrollBehavior: 'smooth', whiteSpace: 'nowrap' }}
-          >
-            {accountFunctions.map((func, index) => (
-              <motion.button
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+          {accountFunctions.map((func, index) => (
+            <button
                 key={index}
                 onClick={func.onClick}
-                className="bg-blue-500 text-white px-4 py-3 rounded-lg flex items-center space-x-2 hover:bg-blue-600 transition-all shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
+                className="bg-gray-700 text-white px-4 py-3 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition-all shadow"
               >
                 {React.createElement(func.icon, { className: "w-5 h-5" })}
                 <span className="text-sm font-medium">{func.label}</span>
-              </motion.button>
-            ))}
-          </div>
-
-          {/* Right Arrow Button */}
-          <motion.button
-            onClick={scrollRight}
-            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition shadow"
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </motion.button>
+              </button>
+          ))}
         </div>
 
         {/* Main Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Ticket Booking Form */}
-          <motion.div
+          <div
             className="col-span-2 grid grid-cols-1 md:grid-cols-1"
-            custom={0}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
           >
-            <div className="bg-white rounded-xl shadow-md backdrop-blur-md bg-opacity-80 ">
+            <div className="bg-gray-800 rounded-xl shadow-md backdrop-blur-md bg-opacity-80">
               <BusCompaniesDisplay />
             </div>
-          </motion.div>
-          <motion.div
-            className="bg-white p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
-            custom={1}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
+          </div>
+          <div
+            className="bg-gray-800 p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-800">Book a Ticket</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Book a Ticket</h2>
             <form onSubmit={handleBooking}>
               <div className="mb-4">
-                <label className="block text-sm text-gray-600 mb-2">Destination</label>
+                <label className="block text-sm text-gray-300 mb-2">Destination</label>
                 <select
-                  className="w-full bg-gray-100 p-2 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-300 transition"
+                  className="w-full bg-gray-700 p-2 rounded-lg text-gray-100 focus:ring-2 focus:ring-gray-300 transition"
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   required
@@ -322,37 +241,34 @@ const Dashboard = () => {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm text-gray-600 mb-2">Travel Date</label>
+                <label className="block text-sm text-gray-300 mb-2">Travel Date</label>
                 <input
                   type="date"
-                  className="w-full bg-gray-100 p-2 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-300 transition"
+                  className="w-full bg-gray-700 p-2 rounded-lg text-gray-100 focus:ring-2 focus:ring-gray-300 transition"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm text-gray-600 mb-2">Number of Tickets</label>
+                <label className="block text-sm text-gray-300 mb-2">Number of Tickets</label>
                 <input
                   type="number"
                   min="1"
-                  className="w-full bg-gray-100 p-2 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-300 transition"
+                  className="w-full bg-gray-700 p-2 rounded-lg text-gray-100 focus:ring-2 focus:ring-gray-300 transition"
                   value={tickets}
                   onChange={(e) => setTickets(e.target.value)}
                   required
                 />
               </div>
-              <motion.button
+              <button
                 type="submit"
-                className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition shadow"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
+                className="w-full bg-gray-700 text-white p-2 rounded-lg hover:bg-gray-600 transition shadow"
               >
                 Book Now
-              </motion.button>
+              </button>
             </form>
-          </motion.div>
+          </div>
 
           {/* Stats Section */}
           <div className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -361,73 +277,54 @@ const Dashboard = () => {
               { title: "Tickets Bought", value: stats.ticketsSold, change: "-5% this month", color: "text-red-600" },
               { title: "Active Users", value: stats.activeUsers, change: "+10% this month", color: "text-green-600" },
             ].map((stat, index) => (
-              <motion.div
+              <div
                 key={index}
-                className="bg-white p-4 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
-                custom={index + 2}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
+                className="bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
               >
-                <h2 className="text-sm text-gray-600">{stat.title}</h2>
-                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+                <h2 className="text-sm text-gray-300">{stat.title}</h2>
+                <p className="text-2xl font-bold text-gray-100">{stat.value}</p>
                 <p className={`text-sm ${stat.color}`}>{stat.change}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Revenue Chart */}
-          <motion.div
-            className="col-span-2 bg-white p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
-            custom={5}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
+          <div
+            className="col-span-2 bg-gray-800 p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-800">Revenue Trends</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Revenue Trends</h2>
             <div className="flex space-x-2 h-35 items-end">
               {revenueData.map((value, index) => (
-                <motion.div
+                <div
                   key={index}
-                  className="bg-blue-500 w-10 rounded-t-lg"
+                  className="bg-gray-700 w-10 rounded-t-lg"
                   style={{ height: `${value}px` }}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${value}px` }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Additional Widgets */}
-          <motion.div
-            className="bg-white p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
-            custom={6}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
+          <div
+            className="bg-gray-800 p-6 rounded-xl shadow-md backdrop-blur-md bg-opacity-80"
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-800">Quick Stats</h2>
-            <p className="text-sm text-gray-600">Pending Bookings: 45</p>
-            <p className="text-sm text-gray-600">Completed Trips: 320</p>
-          </motion.div>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Quick Stats</h2>
+            <p className="text-sm text-gray-300">Pending Bookings: 45</p>
+            <p className="text-sm text-gray-300">Completed Trips: 320</p>
+          </div>
 
           {/* Info Card */}
-          <motion.div
-            className="col-span-2 bg-white p-4 rounded-xl shadow-md backdrop-blur-md bg-opacity-80 mb-10"
-            custom={7}
-            variants={cardVariants}
-            initial="hidden"
-            animate="visible"
+          <div
+            className="col-span-2 bg-gray-800 p-4 rounded-xl shadow-md backdrop-blur-md bg-opacity-80 mb-10"
           >
-            <h2 className="text-lg font-bold mb-2 text-gray-800">Financial Insight</h2>
-            <p className="text-sm text-gray-600">
+            <h2 className="text-lg font-bold mb-2 text-gray-100">Financial Insight</h2>
+            <p className="text-sm text-gray-300">
               I'm able to look at a single dashboard for all my financial needs to improve my startup!
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
         </>
 
     );
