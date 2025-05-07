@@ -301,7 +301,7 @@ const BusCompaniesDisplay = () => {
     <div className="container mx-auto px-4 py-5 ">
       <h2 className="text-3xl font-bold mb-4">Available Bus Companies</h2>
       
-      <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto p-2 scrollbar-thin bg-white  rounded-lg shadow-md backdrop-blur-md bg-opacity-80 scrollbar-thumb-white scrollbar-track-white">
+      <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto p-2 scrollbar-thin bg-gray-900  rounded-lg shadow-md backdrop-blur-md bg-opacity-80 scrollbar-thumb-white scrollbar-track-gray-900">
         {busCompanies.map((company) => (
           <div key={company.id} className="bg-white rounded-2xl shadow-lg overflow-hidden ">
             <div className="p-2">

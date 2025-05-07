@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Car, Calendar, CreditCard, User } from 'lucide-react';
 
+
 const CurvedNavBar = ({ isAdmin = false }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = React.useState(location.pathname);
@@ -27,8 +28,9 @@ const CurvedNavBar = ({ isAdmin = false }) => {
   const navItems = isAdmin ? adminNavItems : userNavItems;
 
   // Select two items for the right side (excluding the first item used for the center button)
-  const rightSideItems = navItems.slice(0, 3); // Take the second and third items (e.g., Fleet and Bookings for admin)
+  const rightSideItems = navItems.slice(0, 3);
   const leftSideItems = navItems.slice(2, 5);
+
   // Animation variants for the navbar entrance
   const navbarVariants = {
     hidden: { y: 100, opacity: 0 },
@@ -51,7 +53,7 @@ const CurvedNavBar = ({ isAdmin = false }) => {
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 right-0 h-16 z-50"
+      className="fixed bottom-0 left-0 right-0 h-16 z-50 sm:block md:hidden lg:hidden" // Show only on mobile (sm and below)
       variants={navbarVariants}
       initial="hidden"
       animate="visible"
@@ -63,8 +65,7 @@ const CurvedNavBar = ({ isAdmin = false }) => {
           clipPath: 'ellipse(60% 90% at 50% 90%)',
         }}
       >
-        {/* Left side (empty to match the image) */}
-        
+        {/* Left side */}
         <div className="relative flex justify-around items-center w-1/2 h-full z-10">
           {leftSideItems.map((item) => (
             <Link to={item.id} key={item.id}>
@@ -109,7 +110,7 @@ const CurvedNavBar = ({ isAdmin = false }) => {
           </motion.button>
         </Link>
 
-        {/* Right side (using items from adminNavItems or userNavItems) */}
+        {/* Right side */}
         <div className="relative flex justify-around items-center w-1/2 h-full z-10">
           {rightSideItems.map((item) => (
             <Link to={item.id} key={item.id}>

@@ -34,7 +34,7 @@ const LandingPage = () => {
 
   
       {/* Header */}
-      <header className="p-6 flex justify-between items-center ">
+      <header className="p-3 flex justify-between items-center ">
         <div className="flex items-center space-x-3">
           <Car className="w-10 h-10 text-gray-400" />
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 text-center md:text-left">   Travel Rwanda </h1>
@@ -49,23 +49,23 @@ const LandingPage = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow container mx-auto px-6 grid md:grid-cols-2 items-center gap-12 py-12">
+      <main className="flex-grow container mx-auto px-12 grid md:grid-cols-2 items-center gap-12 py-2 h-[80vh]">
         {/* Left Side - Animated Booking Steps */}
-        <div className="space-y-6">
-          <h2 className="text-4xl font-bold text-gray-800 mb-6">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
             Book Your Journey in <span className="text-gray-400">4 Easy Steps</span>
           </h2>
 
           {bookingSteps.map((step, index) => (
             <div 
               key={index} 
-              className={`p-4 rounded-lg shadow-md transition-all duration-300 transform 
+              className={`p-3 rounded-lg shadow-md transition-all duration-300 transform 
                 ${activeStep === index 
                   ? 'scale-105 bg-white border-2 border-gray-400' 
                   : 'bg-gray-50 hover:bg-white hover:scale-102'}`}
               onMouseEnter={() => setActiveStep(index)}
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 {step.icon}
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800">{step.title}</h3>
@@ -78,17 +78,17 @@ const LandingPage = () => {
 
         {/* Right Side - Hero Illustration */}
         <div className="relative flex justify-center items-center">
-          <div className="absolute w-72 h-72 bg-gray-300 rounded-full opacity-20 blur-3xl"></div>
-          <div className="relative z-10 bg-white p-8 rounded-2xl shadow-2xl">
+          <div className="absolute w-70 h-70 bg-gray-300 rounded-full opacity-20 blur-3xl"></div>
+          <div className="relative z-10 bg-white p-6 rounded-2xl shadow-2xl">
             <div className="flex space-x-4 items-center mb-4">
-              <MapPin className="w-8 h-8 text-gray-400" />
+              <MapPin className="w-6 h-6 text-gray-400" />
               <div>
                 <h4 className="font-semibold text-gray-800">Kigali</h4>
                 <p className="text-sm text-gray-500">Destination Selected</p>
               </div>
             </div>
-            <div className="flex space-x-4 items-center mb-4">
-              <Calendar className="w-8 h-8 text-gray-400" />
+            <div className="flex space-x-3 items-center mb-4">
+              <Calendar className="w-6 h-6 text-gray-400" />
               <div>
                 <h4 className="font-semibold text-gray-800">March 15, 2025</h4>
                 <p className="text-sm text-gray-500">Departure Date</p>
