@@ -1,32 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { Mail, Lock, User, UserPlus, LogIn } from "lucide-react";
+import { Mail, Lock, User, UserPlus, LogIn, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import Loader from '../common/LoadingSpinner'
-
-
-
-
+import LoadingSpinner from '../ui/LoadingSpinner';
+import EnhancedButton from '../ui/EnhancedButton';
+import EnhancedInput from '../ui/EnhancedInput';
+import EnhancedCard from '../ui/EnhancedCard';
+import AnimatedBackground from '../ui/AnimatedBackground';
 
 const AuthForm = () => {
-
-  // Initialize Firestore
- const db = getFirestore();
- const adminUsers = ["admin@example.com", "anotheradmin@example.com"];
- const [loading, setLoading] = useState(true);
- useEffect(() => {
-  // Simulate data fetching
-  setTimeout(() => {
-    setLoading(false);
-  }, 3000);
-}, []);
+  const db = getFirestore();
+  const adminUsers = ["admin@example.com", "anotheradmin@example.com"];
+  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setIsVisible(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
-    phone:"",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
     address: "",
     notifications: {
       emailUpdates: true,
@@ -36,56 +43,79 @@ const AuthForm = () => {
     ticketHistory: "",
     updatedAt: null
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+    
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    
+    if (!isLogin) {
+      if (!formData.name) {
+        newErrors.name = "Name is required";
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
   };
-  
-  const handleToggleForm = () => {
-    setIsLogin(!isLogin);
-    setError("");
-  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-  
+    if (!validateForm()) return;
+    
+    setAuthLoading(true);
+    setErrors({});
+
     try {
       let userCredential;
-      let userRole = "common user"; // Default role
-  
+      let userRole = "common user";
+
       if (isLogin) {
-        // Sign in with Firebase
         userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
         
-        // Fetch user role and other details from Firestore
         const userRef = doc(db, "users", userCredential.user.uid);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          userRole = userData.role; // Get role from Firestore
-          setFormData((prev) => ({ ...prev, ...userData })); // Update formData state with DB values
+          userRole = userData.role;
+          setFormData(prev => ({ ...prev, ...userData }));
         } else {
-          setError("User data not found.");
+          setErrors({ general: "User data not found." });
           return;
         }
-        
       } else {
-        // Sign up new user
-        if (formData.password !== formData.confirmPassword) {
-          setError("Passwords do not match!");
-          return;
-        }
         userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-  
-        // Determine role based on email
+
         if (adminUsers.includes(formData.email)) {
           userRole = "admin";
         }
-  
-        // Prepare user data for Firestore
+
         const userData = {
           name: formData.name,
           email: formData.email,
@@ -94,170 +124,217 @@ const AuthForm = () => {
           notifications: formData.notifications,
           membershipType: formData.membershipType,
           ticketHistory: formData.ticketHistory,
-          role: userRole, // Include role
-          updatedAt: new Date(), // Timestamp
+          role: userRole,
+          updatedAt: new Date(),
         };
-  
-        // Save full user data to Firestore
+
         const userRef = doc(db, "users", userCredential.user.uid);
         await setDoc(userRef, userData);
-  
-        console.log("User registered:", userCredential.user);
       }
-  
-      // Store authentication state and role in localStorage
+
       localStorage.setItem("auth", "true");
       localStorage.setItem("role", userRole);
-  
-      // Redirect based on role
       navigate("/dashboard");
-  
-      // Reset form
+
       setFormData({
         name: "",
-        phone: "",
-        address: "",
         email: "",
         password: "",
         confirmPassword: "",
-        notifications: {
-          emailUpdates: true,
-          smsUpdates: true,
-        },
+        phone: "",
+        address: "",
+        notifications: { emailUpdates: true, smsUpdates: true },
         membershipType: "",
         ticketHistory: "",
         updatedAt: null,
       });
-  
+
     } catch (err) {
-      setError(isLogin ? "Invalid credentials" : "Failed to create account");
-      console.error("Auth error:", err);
+      setErrors({ 
+        general: isLogin ? "Invalid email or password" : "Failed to create account. Please try again." 
+      });
+    } finally {
+      setAuthLoading(false);
     }
   };
-  
-  
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setError("");
+    setErrors({});
     setFormData({
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
+      phone: "",
+      address: "",
+      notifications: { emailUpdates: true, smsUpdates: true },
+      membershipType: "",
+      ticketHistory: "",
+      updatedAt: null,
     });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-surface flex items-center justify-center">
+        <LoadingSpinner size="xl" text="Preparing your experience..." fullScreen />
+      </div>
+    );
+  }
+
   return (
-    <div className="">
-        {loading ? (
-        <Loader />
-      ) : (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white p-8 rounded-xl shadow-2xl transform transition-all duration-500">
-          <div className="flex justify-center mb-8">
-            <div className="bg-black-100 p-3 rounded-full">
-              {isLogin ? <LogIn className="h-8 w-8 text-black" /> : <UserPlus className="h-8 w-8 text-black" />}
+    <div className="min-h-screen bg-gradient-surface relative overflow-hidden">
+      <AnimatedBackground variant="grid" opacity={0.03} />
+      
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className={`w-full max-w-md transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <EnhancedCard variant="elevated" className="backdrop-blur-sm">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                {isLogin ? (
+                  <LogIn className="w-8 h-8 text-white" />
+                ) : (
+                  <UserPlus className="w-8 h-8 text-white" />
+                )}
+              </div>
+              <h1 className="text-h2 font-bold text-primary mb-2">
+                {isLogin ? "Welcome Back" : "Create Account"}
+              </h1>
+              <p className="text-body text-secondary">
+                {isLogin 
+                  ? "Sign in to continue your journey" 
+                  : "Join thousands of satisfied travelers"
+                }
+              </p>
             </div>
-          </div>
 
-          <div className="flex justify-center space-x-4 mb-8">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`pb-2 px-4 text-sm font-medium transition-colors duration-300 ${
-                isLogin ? "text-black-600 border-b-2 border-black" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`pb-2 px-4 text-sm font-medium transition-colors duration-300 ${
-                !isLogin ? "text-black-600 border-b-2 border-black-600" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Register
-            </button>
-          </div>
+            {/* Tab Switcher */}
+            <div className="flex bg-subtle rounded-xl p-1 mb-6">
+              <button
+                onClick={() => setIsLogin(true)}
+                className={`flex-1 py-2 px-4 rounded-lg text-body-sm font-medium transition-all duration-200 ${
+                  isLogin
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-secondary hover:text-primary'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setIsLogin(false)}
+                className={`flex-1 py-2 px-4 rounded-lg text-body-sm font-medium transition-all duration-200 ${
+                  !isLogin
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-secondary hover:text-primary'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
 
-          {error && <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-lg text-center">{error}</div>}
+            {/* Error Message */}
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-body-sm text-red-600">{errors.general}</p>
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="pl-10 w-full p-3 border border-gray-300 rounded-lg"
-                    required
-                  />
-                </div>
+                <EnhancedInput
+                  label="Full Name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  error={errors.name}
+                  icon={<User className="w-4 h-4" />}
+                  placeholder="Enter your full name"
+                />
               )}
 
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pl-10 w-full p-3 border border-gray-300 rounded-lg"
-                  required
-                />
-              </div>
+              <EnhancedInput
+                label="Email Address"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+                icon={<Mail className="w-4 h-4" />}
+                placeholder="Enter your email"
+              />
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="password"
-                  placeholder="Password"
+                <EnhancedInput
+                  label="Password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="pl-10 w-full p-3 border border-gray-300 rounded-lg"
-                  required
+                  onChange={handleChange}
+                  error={errors.password}
+                  icon={<Lock className="w-4 h-4" />}
+                  placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-9 text-secondary hover:text-primary transition-fast"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
 
               {!isLogin && (
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="password"
-                    placeholder="Confirm Password"
+                  <EnhancedInput
+                    label="Confirm Password"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="pl-10 w-full p-3 border border-gray-300 rounded-lg"
-                    required
+                    onChange={handleChange}
+                    error={errors.confirmPassword}
+                    icon={<Lock className="w-4 h-4" />}
+                    placeholder="Confirm your password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-9 text-secondary hover:text-primary transition-fast"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               )}
+
+              <EnhancedButton
+                type="submit"
+                loading={authLoading}
+                size="lg"
+                className="w-full mt-6"
+              >
+                {isLogin ? "Sign In" : "Create Account"}
+              </EnhancedButton>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <p className="text-body-sm text-secondary">
+                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                <button
+                  onClick={toggleForm}
+                  className="ml-1 text-primary font-medium hover:underline transition-fast"
+                >
+                  {isLogin ? "Sign up" : "Sign in"}
+                </button>
+              </p>
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-black  border-gray-600 text-white p-3 rounded-lg hover:bg-black-700"
-            >
-              {isLogin ? "Sign In" : "Create Account"}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button onClick={toggleForm} className="text-sm text-gray-600 hover:text-gray-800">
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
-          </div>
+          </EnhancedCard>
         </div>
       </div>
-        
     </div>
-  )}
-   </div>
   );
 };
 
