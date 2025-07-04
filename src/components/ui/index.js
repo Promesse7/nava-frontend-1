@@ -199,24 +199,5 @@ export const animationPresets = {
   },
 };
 
-// Export all for easy access
-export default {
-  // Components
-  EnhancedButton,
-  EnhancedCard,
-  EnhancedInput,
-  EnhancedSelect,
-  EnhancedTabs,
-  EnhancedModal,
-  EnhancedToast,
-  EnhancedLoadingSpinner,
-  ProgressIndicator,
-  EnhancedForm,
-  
-  // Utilities
-  componentTheme,
-  designTokens,
-  animationPresets,
-  createComponentVariant,
-  withEnhancedProps,
-};
+// Note: Components are exported individually above
+// Default export removed to avoid circular dependencies
