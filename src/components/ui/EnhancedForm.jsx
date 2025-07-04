@@ -1,6 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
 import EnhancedInput from './EnhancedInput';
 import EnhancedSelect from './EnhancedSelect';
 import EnhancedButton from './EnhancedButton';
