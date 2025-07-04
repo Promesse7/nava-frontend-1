@@ -17,6 +17,7 @@ import DashboardOld from "./Voice_booking";
 import OverviewAdmin from "./OverviewAdmin";
 import ModernOverviewAdmin from "./DashboardAssets/ModernOverviewAdmin";
 import OverviewUser from "./OverviewUser";
+import ModernOverviewUser from "./DashboardAssets/ModernOverviewUser";
 
 // User dashboard components
 import MyBookings from "./DashboardAssets/MyBookings";
