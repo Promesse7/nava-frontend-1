@@ -15,6 +15,7 @@ import Payment from "./DashboardAssets/PaymentDashboard";
 import DriverManagement from "./DashboardAssets/DriverManagament";
 import DashboardOld from "./Voice_booking";
 import OverviewAdmin from "./OverviewAdmin";
+import ModernOverviewAdmin from "./DashboardAssets/ModernOverviewAdmin";
 import OverviewUser from "./OverviewUser";
 
 // User dashboard components
