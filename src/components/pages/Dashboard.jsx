@@ -8,6 +8,7 @@ import { Home, Users, Car, Calendar, CreditCard, HelpCircle, Mic, User, Settings
 // Admin dashboard components
 import FleetManagement from "../search/FleetManagement";
 import DashboardHome from "./DashboardAssets/DashboardHome";
+import ModernDashboardHome from "./DashboardAssets/ModernDashboardHome";
 import Welcome from "./DashboardAssets/Welcome";
 import BookingManagement from "../admin/BookingManagement";
 import Payment from "./DashboardAssets/PaymentDashboard";
