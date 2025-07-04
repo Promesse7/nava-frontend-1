@@ -99,7 +99,7 @@ const Dashboard = () => {
 
     if (userData.role === "admin") {
       switch (activeTab) {
-        case "dashboard": return <DashboardHome />;
+        case "dashboard": return <ModernDashboardHome />;
         case "fleet": return <FleetManagement />;
         case "driver": return <DriverManagement />;
         case "bookedCar": return <BookingManagement />;
