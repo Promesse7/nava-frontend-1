@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TabsContext = createContext();
