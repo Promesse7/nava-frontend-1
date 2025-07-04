@@ -110,7 +110,7 @@ const Dashboard = () => {
       }
     } else {
       switch (activeTab) {
-        case "overview": return <OverviewUser />;
+        case "overview": return <ModernOverviewUser />;
         case "my-bookings": return <MyBookings />;
         case "book-ride": return <BookRide />;
         case "payment-methods": return <PaymentMethods />;
