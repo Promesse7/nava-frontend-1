@@ -104,7 +104,7 @@ const Dashboard = () => {
         case "driver": return <DriverManagement />;
         case "bookedCar": return <BookingManagement />;
         case "payment": return <Payment />;
-        case "customer": return <OverviewAdmin />;
+        case "customer": return <ModernOverviewAdmin />;
         case "report": return <DashboardOld />;
         default: return <Welcome />;
       }
