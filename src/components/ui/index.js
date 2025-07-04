@@ -1,6 +1,8 @@
 // Enhanced Component Library Index
 // Elegant Black & White Design System Components
 
+import React from 'react';
+
 // Core Components
 export { default as EnhancedButton } from './EnhancedButton';
 export { default as EnhancedCard, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from './EnhancedCard';
